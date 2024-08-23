@@ -11,7 +11,8 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
-
+    const TYPE_ADMIN = 'admin';
+    const TYPE_MEMBER = 'member';
     /**
      * The attributes that are mass assignable.
      *
@@ -21,6 +22,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'phone_number',
+        'address',
+        'type',
+        'status_account',
     ];
 
     /**
@@ -41,5 +46,12 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'status_account' => 'boolean',
     ];
+
+    public function reviews()
+    {
+        // 1 user có nhiều reviews
+        return $this->hasMany(Review::class);
+    }
 }
