@@ -11,13 +11,19 @@
                 <div class="col-auto align-self-center">
                     <a href="{{ route('admin.categories.listDM') }}" class="btn btn-dark">Back</a>
                 </div>
-                <div class="col-auto align-self-center">
-                    <h5 class="mb-0">Edit categories</h5>
-                </div>
+                @if (session('error'))
+                    <div class="col-auto align-self-center">
+                        <h5 class="mb-0 text-danger">{{ session('error') }}</h5>
+                    </div>
+                @else
+                    <div class="col-auto align-self-center">
+                        <h5 class="mb-0">Edit categories</h5>
+                    </div>
+                @endif
             </div>
         </div>
         <div class="card-body px-0">
-            <form class="table-responsive scrollbar" action="{{ route('admin.categories.updateDM', $data->slug) }}"
+            <form class="table-responsive scrollbar" action="{{ route('admin.categories.updateDM', $model->slug) }}"
                 method="POST">
                 @csrf
                 @method('PUT')
@@ -30,7 +36,7 @@
                         <td>
                             <div class="col-auto">
                                 <input class="form-control" id="autoSizingInput" type="text" name="name"
-                                    value="{{ $data->name }}" />
+                                    value="{{ $model->name }}" />
                                 @error('name')
                                     <div class="alert alert-danger border-0 d-flex align-items-center" role="alert">
                                         <div class="bg-danger me-3 icon-item">
@@ -46,7 +52,7 @@
                         <td>
                             <div class="col-auto">
                                 <select class="form-select" id="autoSizingSelect" name="parent_id">
-                                    <option value="" {!! isset($data->parent_id) && $data->parent_id == null ? 'selected' : '' !!}>Trống</option>
+                                    <option value="">Trống</option>
                                     @foreach ($categoryParent as $parent)
                                         @php($each = '')
                                         @include('admin.contents.category.nested-category', [
@@ -64,14 +70,14 @@
                     <tr>
                         <td>
                             <div class="col-auto">
-                                <textarea class="form-control" id="basic-form-textarea" rows="2" cols="30" name="description">{{ $data->description }}</textarea>
+                                <textarea class="form-control" id="basic-form-textarea" rows="2" cols="30" name="description">{{ $model->description }}</textarea>
                             </div>
                         </td>
                         <td>
                             <div class="col-auto">
                                 <div class="form-check mb-0">
                                     <input class="form-check-input" id="autoSizingCheck" type="checkbox" value="1"
-                                        name="is_active" {!! $data->is_active == 1 ? 'checked' : '' !!} />
+                                        name="is_active" {!! $model->is_active == 1 ? 'checked' : '' !!} />
                                     <label class="form-check-label mb-0" for="autoSizingCheck">Is active</label>
                                 </div>
                             </div>

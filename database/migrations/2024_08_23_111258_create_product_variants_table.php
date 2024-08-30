@@ -15,10 +15,12 @@ return new class extends Migration
         Schema::create('product_variants', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(Product::class)->constrained()->cascadeOnDelete()->cascadeOnUpdate();
-            $table->string('sku')->comment('mã sản phẩm biến thể');
+            $table->string('sku')->unique()->nullable()->comment('mã sản phẩm biến thể');
             $table->double('price_default', 15, 2)->nullable()->default(0);
             $table->double('price_sale', 15, 2)->nullable()->default(0);
             $table->integer('sale_percent')->nullable()->default(0);
+            $table->dateTime('start_date')->nullable()->comment('ngày bắt đầu khuyến mại');
+            $table->dateTime('end_date')->nullable()->comment('ngày kết thúc khuyến mại');
             $table->integer('quantity')->default(0);
             $table->timestamps();
         });

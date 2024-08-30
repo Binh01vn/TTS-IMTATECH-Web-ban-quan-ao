@@ -8,6 +8,16 @@
     <div class="card mb-3">
         <div class="card-header">
             <div class="row flex-between-end">
+                @if (session('success'))
+                    <div class="col-auto align-self-center">
+                        <h5 class="mb-0 text-success">{{ session('success') }}</h5>
+                    </div>
+                @endif
+                @if (session('error'))
+                    <div class="col-auto align-self-center">
+                        <h5 class="mb-0 text-danger">{{ session('error') }}</h5>
+                    </div>
+                @endif
                 <div class="col-auto align-self-center">
                     <h5 class="mb-0">List categories</h5>
                 </div>
@@ -85,9 +95,7 @@
                                     <td>{{ $item->name }}</td>
                                     <td>{{ $item->slug }}</td>
                                     <td>
-                                        {!! $item->description
-                                            ? $item->description
-                                            : '<span class="badge badge rounded-pill badge-subtle-warning">Null description</span>' !!}
+                                        {!! $item->description ? $item->description : '<strong>Null description</strong>' !!}
                                     </td>
                                     <td>
                                         {!! $item->is_active == 0
@@ -95,9 +103,7 @@
                                             : '<span class="badge badge rounded-pill badge-subtle-success">Active</span>' !!}
                                     </td>
                                     <td class="text-end">
-                                        {!! $item->parent_id == ''
-                                            ? '<span class="badge badge rounded-pill badge-subtle-warning">Null parent</span>'
-                                            : '' . $item->parent?->name . '' !!}
+                                        {!! $item->parent_id == 0 ? '<strong>Null parent</strong>' : '' . $item->parent?->name . '' !!}
                                     </td>
                                     <td class="align-middle white-space-nowrap text-end">
                                         <div class="dropstart font-sans-serif position-static d-inline-block">

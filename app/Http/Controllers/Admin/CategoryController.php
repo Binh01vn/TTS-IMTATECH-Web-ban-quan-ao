@@ -27,13 +27,14 @@ class CategoryController extends Controller
     {
         $validator = $request->validate(
             [
-                'name' => 'required|min:2|max:255'
+                'name' => 'required|unique:categories,name|min:2|max:255'
             ]
             ,
             [
                 'name.required' => 'Không được để tên danh mục trống!',
                 'name.max' => 'Tên danh mục không được vượt quá 255 ký tự!',
-                'name.min' => 'Tên danh mục phải có độ dài lớn hơn 2 ký tự'
+                'name.min' => 'Tên danh mục phải có độ dài lớn hơn 2 ký tự!',
+                'name.unique' => 'Tên danh mục đã tồn tại trong hệ thống!',
             ]
         );
         try {
@@ -41,15 +42,13 @@ class CategoryController extends Controller
             $validator['slug'] = '';
             $validator['slug'] = Str::slug($request->name);
             $validator['description'] = $request->description;
-            if ($request->parent_id == null) {
-                $validator['parent_id'] = 0;
-            } else {
+            if ($request->parent_id != null) {
                 $validator['parent_id'] = $request->parent_id;
             }
             Category::query()->create($validator);
-            return redirect(route('admin.categories.listDM'));
-        } catch (\Exception $exception) {
-            
+            return redirect(route('admin.categories.listDM'))->with('success', 'Thêm mới danh mục thành công!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
         }
     }
 
@@ -58,9 +57,10 @@ class CategoryController extends Controller
      */
     public function edit(string $slug)
     {
-        $data = Category::query()->where('slug', $slug)->firstOrFail();
+        $model = Category::query()->where('slug', $slug)->firstOrFail();
+        // lấy danh mục cha trước
         $categoryParent = Category::query()->with('children')->whereNull('parent_id')->get();
-        return view('admin.contents.category.edit', compact('data', 'categoryParent'));
+        return view('admin.contents.category.edit', compact('model', 'categoryParent'));
     }
 
     /**
@@ -85,16 +85,21 @@ class CategoryController extends Controller
             $validator['slug'] = Str::slug($request->name);
             $validator['description'] = $request->description;
             $validator['updated_at'] = Carbon::now('Asia/Ho_Chi_Minh');
-            if ($request->parent_id == null) {
-                $validator['parent_id'] = 0;
-            } else {
-                $validator['parent_id'] = $request->parent_id;
-            }
             $model = Category::query()->where('slug', $slug)->firstOrFail();
+            if ($request->parent_id != null) {
+                $children_id = Category::query()->findOrFail($request->parent_id);
+                if ($children_id->parent_id == $model->id) {
+                    return redirect()->back()->with('error', 'Danh mục cha không thể thuộc về danh mục con!');
+                } else {
+                    $validator['parent_id'] = $request->parent_id;
+                }
+            } else {
+                $validator['parent_id'] = null;
+            }
             $model->update($validator);
-            return redirect(route('admin.categories.listDM'));
-        } catch (\Exception $exception) {
-
+            return redirect(route('admin.categories.listDM'))->with('success', 'Cập nhật danh mục thành công!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
         }
     }
 

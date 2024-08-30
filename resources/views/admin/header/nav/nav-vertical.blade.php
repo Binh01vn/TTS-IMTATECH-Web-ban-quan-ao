@@ -21,8 +21,7 @@
             <ul class="navbar-nav flex-column mb-3" id="navbarVerticalNav">
                 <li class="nav-item">
                     <!-- parent pages-->
-                    <a class="nav-link dropdown-indicator" href="#dashboard" role="button" data-bs-toggle="collapse"
-                        aria-expanded="true" aria-controls="dashboard">
+                    <a class="nav-link" href="{{ route('admin.dashboard') }}">
                         <div class="d-flex align-items-center">
                             <span class="nav-link-icon">
                                 <span class="fas fa-chart-pie"></span>
@@ -30,41 +29,6 @@
                             <span class="nav-link-text ps-1">Dashboard</span>
                         </div>
                     </a>
-                    <ul class="nav collapse show" id="dashboard">
-                        <li class="nav-item"><a class="nav-link active" href="{{ route('admin.dashboard') }}">
-                                <div class="d-flex align-items-center"><span class="nav-link-text ps-1">Default</span>
-                                </div>
-                            </a><!-- more inner pages--></li>
-                        <li class="nav-item"><a class="nav-link" href="dashboard/analytics.html">
-                                <div class="d-flex align-items-center"><span class="nav-link-text ps-1">Analytics</span>
-                                </div>
-                            </a><!-- more inner pages--></li>
-                        <li class="nav-item"><a class="nav-link" href="dashboard/crm.html">
-                                <div class="d-flex align-items-center"><span class="nav-link-text ps-1">CRM</span></div>
-                            </a><!-- more inner pages--></li>
-                        <li class="nav-item"><a class="nav-link" href="dashboard/e-commerce.html">
-                                <div class="d-flex align-items-center"><span class="nav-link-text ps-1">E
-                                        commerce</span></div>
-                            </a><!-- more inner pages--></li>
-                        <li class="nav-item"><a class="nav-link" href="dashboard/lms.html">
-                                <div class="d-flex align-items-center"><span class="nav-link-text ps-1">LMS</span><span
-                                        class="badge rounded-pill ms-2 badge-subtle-success">New</span>
-                                </div>
-                            </a><!-- more inner pages--></li>
-                        <li class="nav-item"><a class="nav-link" href="dashboard/project-management.html">
-                                <div class="d-flex align-items-center"><span
-                                        class="nav-link-text ps-1">Management</span></div>
-                            </a><!-- more inner pages--></li>
-                        <li class="nav-item"><a class="nav-link" href="dashboard/saas.html">
-                                <div class="d-flex align-items-center"><span class="nav-link-text ps-1">SaaS</span>
-                                </div>
-                            </a><!-- more inner pages--></li>
-                        <li class="nav-item"><a class="nav-link" href="dashboard/support-desk.html">
-                                <div class="d-flex align-items-center"><span class="nav-link-text ps-1">Support
-                                        desk</span><span class="badge rounded-pill ms-2 badge-subtle-success">New</span>
-                                </div>
-                            </a><!-- more inner pages--></li>
-                    </ul>
                 </li>
                 <li class="nav-item"><!-- label-->
                     <div class="row navbar-vertical-label-wrapper mt-3 mb-2">
@@ -131,48 +95,18 @@
                     </a>
                     <ul class="nav collapse" id="e-commerce">
                         <li class="nav-item">
-                            <a class="nav-link dropdown-indicator" href="#categories" data-bs-toggle="collapse"
-                                aria-expanded="false" aria-controls="e-commerce">
+                            <a class="nav-link" href="{{ route('admin.categories.listDM') }}">
                                 <div class="d-flex align-items-center">
                                     <span class="nav-link-text ps-1">Categories</span>
                                 </div>
                             </a>
-                            <!-- more inner pages-->
-                            <ul class="nav collapse" id="categories">
-                                <li class="nav-item">
-                                    <a class="nav-link" href="{{route('admin.categories.listDM')}}">
-                                        <div class="d-flex align-items-center">
-                                            <span class="nav-link-text ps-1">List categories</span>
-                                        </div>
-                                    </a>
-                                    <!-- more inner pages-->
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="{{route('admin.categories.createDM')}}">
-                                        <div class="d-flex align-items-center">
-                                            <span class="nav-link-text ps-1">Add category</span>
-                                        </div>
-                                    </a>
-                                    <!-- more inner pages-->
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="app/e-commerce/product/product-details.html">
-                                        <div class="d-flex align-items-center">
-                                            <span class="nav-link-text ps-1">Category details</span>
-                                        </div>
-                                    </a>
-                                    <!-- more inner pages-->
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="app/e-commerce/product/add-product.html">
-                                        <div class="d-flex align-items-center">
-                                            <span class="nav-link-text ps-1">Add
-                                                product</span>
-                                        </div>
-                                    </a>
-                                    <!-- more inner pages-->
-                                </li>
-                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('admin.attributes.listAttr') }}">
+                                <div class="d-flex align-items-center">
+                                    <span class="nav-link-text ps-1">Attributes</span>
+                                </div>
+                            </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link dropdown-indicator" href="#product" data-bs-toggle="collapse"
@@ -207,7 +141,7 @@
                                     <!-- more inner pages-->
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="app/e-commerce/product/add-product.html">
+                                    <a class="nav-link" href="{{route('admin.products.createPrd')}}">
                                         <div class="d-flex align-items-center">
                                             <span class="nav-link-text ps-1">Add
                                                 product</span>
@@ -888,9 +822,8 @@
                                 <div class="d-flex align-items-center"><span class="nav-link-text ps-1">Leaflet
                                         map</span></div>
                             </a><!-- more inner pages--></li>
-                    </ul><!-- parent pages--><a class="nav-link dropdown-indicator" href="#components"
-                        role="button" data-bs-toggle="collapse" aria-expanded="false"
-                        aria-controls="components">
+                    </ul><!-- parent pages--><a class="nav-link dropdown-indicator" href="#components" role="button"
+                        data-bs-toggle="collapse" aria-expanded="false" aria-controls="components">
                         <div class="d-flex align-items-center"><span class="nav-link-icon"><span
                                     class="fas fa-puzzle-piece"></span></span><span
                                 class="nav-link-text ps-1">Components</span></div>
@@ -902,13 +835,11 @@
                                 </div>
                             </a><!-- more inner pages--></li>
                         <li class="nav-item"><a class="nav-link" href="modules/components/alerts.html">
-                                <div class="d-flex align-items-center"><span
-                                        class="nav-link-text ps-1">Alerts</span>
+                                <div class="d-flex align-items-center"><span class="nav-link-text ps-1">Alerts</span>
                                 </div>
                             </a><!-- more inner pages--></li>
                         <li class="nav-item"><a class="nav-link" href="modules/components/anchor.html">
-                                <div class="d-flex align-items-center"><span
-                                        class="nav-link-text ps-1">Anchor</span>
+                                <div class="d-flex align-items-center"><span class="nav-link-text ps-1">Anchor</span>
                                 </div>
                             </a><!-- more inner pages--></li>
                         <li class="nav-item"><a class="nav-link" href="modules/components/animated-icons.html">
@@ -920,8 +851,7 @@
                                         class="nav-link-text ps-1">Background</span></div>
                             </a><!-- more inner pages--></li>
                         <li class="nav-item"><a class="nav-link" href="modules/components/badges.html">
-                                <div class="d-flex align-items-center"><span
-                                        class="nav-link-text ps-1">Badges</span>
+                                <div class="d-flex align-items-center"><span class="nav-link-text ps-1">Badges</span>
                                 </div>
                             </a><!-- more inner pages--></li>
                         <li class="nav-item"><a class="nav-link" href="modules/components/bottom-bar.html">

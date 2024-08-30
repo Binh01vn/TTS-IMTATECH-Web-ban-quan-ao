@@ -23627,7 +23627,7 @@ span.flatpickr-weekday,
 /* -------------------------------------------------------------------------- */
 /*                                  Dropzone                                  */
 /* -------------------------------------------------------------------------- */
-.dropzone {
+/* .dropzone {
   position: relative;
   background-color: #fff;
   border: 0;
@@ -23826,7 +23826,7 @@ span.flatpickr-weekday,
   -ms-flex-pack: center;
   justify-content: center;
   cursor: pointer;
-}
+} */
 
 /* -------------------------------------------------------------------------- */
 /*                                   Choices                                  */
