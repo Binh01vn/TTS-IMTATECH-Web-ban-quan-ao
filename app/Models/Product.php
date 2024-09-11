@@ -48,8 +48,14 @@ class Product extends Model
         return $this->hasMany(ProductVariant::class);
     }
 
-    public function galleries(){
+    public function galleries()
+    {
         // quan he 1-n
         return $this->hasMany(ProductGallery::class);
+    }
+    public function tags()
+    {
+        // quan he n-n
+        return $this->belongsToMany(Tag::class);
     }
 }

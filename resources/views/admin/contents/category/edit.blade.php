@@ -52,7 +52,7 @@
                         <td>
                             <div class="col-auto">
                                 <select class="form-select" id="autoSizingSelect" name="parent_id">
-                                    <option value="">Trống</option>
+                                    <option value="0">Trống</option>
                                     @foreach ($categoryParent as $parent)
                                         @php($each = '')
                                         @include('admin.contents.category.nested-category', [

@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('order_items', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(Order::class)->constrained()->cascadeOnDelete()->cascadeOnUpdate();
-            $table->foreignIdFor(ProductVariant::class)->constrained()->nullOnDelete()->cascadeOnUpdate();
+            $table->foreignIdFor(ProductVariant::class)->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->unsignedInteger('quantity')->default(0);
             $table->string('product_name');
             $table->string('product_sku');

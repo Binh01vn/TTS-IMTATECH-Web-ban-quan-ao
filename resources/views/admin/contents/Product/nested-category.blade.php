@@ -1,12 +1,5 @@
 @if ($category->is_active == 1)
-    <option value="{{ $category->id }}"
-        @php
-        if (isset($model) && $model->parent_id == $category->id) {
-            echo 'selected';
-        }
-        @endphp>
-        {{ $each }}{{ $category->name }}
-    </option>
+    <option value="{{ $category->id }}">{{ $each }}{{ $category->name }}</option>
 @endif
 
 {{-- danh mục con thuộc danh mục cha --}}

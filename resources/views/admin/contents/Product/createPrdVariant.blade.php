@@ -1,7 +1,7 @@
 @extends('layouts.master')
 
 @section('title')
-    Add new Product
+    Product Variant
 @endsection
 @section('css-libs')
     <link href="{{ asset('theme/admin/vendors/choices/choices.min.css') }}" rel="stylesheet">
@@ -11,11 +11,6 @@
     <link href="{{ asset('theme/admin/vendors/select2-bootstrap-5-theme/select2-bootstrap-5-theme.min.css') }}"
         rel="stylesheet">
 @endsection
-@section('css-setting')
-    <style>
-
-    </style>
-@endsection
 @section('contents')
     <form class="row g-0" action="{{ route('admin.products.storePrd') }}" method="POST" enctype="multipart/form-data">
         @csrf
@@ -24,7 +19,7 @@
                 <div class="card-header">
                     <div class="row flex-between-center">
                         <div class="col-md">
-                            <h5 class="mb-2 mb-md-0">Add a product</h5>
+                            <h5 class="mb-2 mb-md-0">Product Variant</h5>
                         </div>
                     </div>
                 </div>
@@ -42,6 +37,14 @@
                             <div class="col-12 mb-3">
                                 <label class="form-label" for="product-name">Product name:</label>
                                 <input class="form-control" id="productName" type="text" name="name" />
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label" for="slug">Product slug:</label>
+                                <input class="form-control" id="slug" type="text" name="slug" />
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label" for="sku">Product sku:</label>
+                                <input class="form-control" id="sku" type="text" name="sku" />
                             </div>
                         </div>
                     </div>
@@ -85,7 +88,7 @@
                             <label class="form-label" for="product-description">User manual:</label>
                             <textarea class="form-control" id="user_manual" name="user_manual"></textarea>
                         </div>
-                        {{-- <div class="col-sm-12 mb-3">
+                        <div class="col-sm-12 mb-3">
                             <label class="form-label" for="import-status">Product Attribute:</label>
                             <select class="form-select" id="nameAttr" name="nameAttr"
                                 onchange="getAttrValue(urlAttrValue='{{ route('admin.products.attrValue') }}')">
@@ -98,7 +101,7 @@
                         <div class="col-sm-12 mb-3">
                             <div class="row gx-2 flex-between-center mb-3" id="showItemAttr">No product attribute found
                             </div>
-                        </div> --}}
+                        </div>
                         {{-- <div class="col-sm-6 mb-3">
                             <label class="form-label" for="origin-country">Country of Origin:</label>
                             <select class="form-select" id="origin-country" name="origin-country">
@@ -167,30 +170,6 @@
                     </div>
                 </div>
             </div>
-            {{-- PRODUCT VARIANT --}}
-            <div class="card mb-3 mb-lg-0">
-                <div class="card-header bg-body-tertiary">
-                    <h6 class="mb-0">Product Variant</h6>
-                </div>
-                <div class="card-body">
-                    <div class="row gy-3 gx-2">
-                        @foreach ($dataAttr as $itemAttr)
-                            <div class="col-sm-2">
-                                <div class="form-check">
-                                    <input class="form-check-input" id="attr-select{{ $itemAttr->id }}" type="checkbox"
-                                        name="attrID[]" value="{{ $itemAttr->id }}" onclick="getAttrValue(this)">
-                                    <label class="form-check-label"><strong>{{ $itemAttr->name }}</strong></label>
-                                </div>
-                            </div>
-                            <div class="col-sm-10">
-                                <div class="row" id="attrValue-select{{ $itemAttr->id }}">
-                                    <div class="col-sm-12 mb-3 naf-{{ $itemAttr->id }}">No attributes found</div>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
         </div>
         <div class="col-lg-4 ps-lg-2">
             <div class="sticky-sidebar">
@@ -222,12 +201,13 @@
                     </div>
                     <div class="card-body">
                         <div class="form-group">
-                            <label for="multiple-select">Select tags</label>
-                            <select class="form-select selectpicker" id="tags-select" multiple="multiple" name="tags[]"
-                                data-options='{"placeholder":"Select your tags"}'>
-                                @foreach ($dataTags as $tags)
-                                    <option value="{{ $tags->id }}">{{ $tags->name }}</option>
-                                @endforeach
+                            <label for="multiple-select">Select options</label>
+                            <select class="form-select selectpicker" id="multiple-select" multiple="multiple"
+                                name="tags[]" data-options='{"placeholder":"Select your options"}'>
+                                <option>Afghanistan</option>
+                                <option>Albania</option>
+                                <option>Algeria</option>
+                                <option>American Samoa</option>
                             </select>
                         </div>
                     </div>
@@ -306,6 +286,7 @@
                             <h5 class="mb-2 mb-md-0">You're almost done!</h5>
                         </div>
                         <div class="col-auto">
+                            <input type="reset" class="btn btn-link text-secondary p-0 me-3 fw-medium" value="Discard">
                             <input type="submit" class="btn btn-primary" value="Create product">
                         </div>
                     </div>
@@ -327,15 +308,13 @@
 
 @section('js-setting')
     <script>
-        function getAttrValue(checkbox) {
-            let urlAttrValue = `{{ route('admin.products.attrValue') }}`;
+        function getAttrValue(urlAttrValue) {
+            let attributeId = document.getElementById('nameAttr').value;
             let inputType = document.querySelector('input[type="submit"].btn.btn-primary');
             let formAction = document.querySelector('form[method="POST"].row.g-0');
-            let attributeId = checkbox.value;
-            let divToRemove = document.querySelector(`.col-sm-12.mb-3.naf-${attributeId}`);
-            let divItemAttr = document.querySelectorAll('div[name].col-sm-4');
-
-            if (checkbox.checked == true && attributeId > 0) {
+            if (attributeId != '') {
+                inputType.value = "Next";
+                formAction.action = "{{ route('admin.products.variantPrd') }}";
                 $.ajax({
                     url: urlAttrValue,
                     type: 'GET',
@@ -343,82 +322,48 @@
                         attribute_id: attributeId
                     },
                     success: function(response) {
-                        if (response.length > 0) {
-                            inputType.value = "Next";
-                            formAction.action = "{{ route('admin.products.variantPrd') }}";
-                            if (divToRemove) {
-                                divToRemove.remove();
+                        $('#showItemAttr').empty();
+                        response.forEach(function(item) {
+                            let isColor = /^#[0-9A-F]{6}$/i.test(item.value);
+                            let htmlColor = `
+                                <div class="col-sm-4 mb-3">
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="checkbox" name="AttrValues[]" value="${item.id}" />
+                                        <label class="form-check-label" for="inlineCheckbox">
+                                            <input class="form-control form-control-color" type="color" value="${item.value}" disabled/>
+                                        </label>
+                                    </div>
+                                </div>
+                            `;
+                            let html = `
+                                <div class="col-sm-4 mb-3">
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="checkbox" name="AttrValues[]" value="${item.id}" />
+                                        <label class="form-check-label" for="inlineCheckbox">${item.value}</label>
+                                    </div>
+                                </div>
+                            `;
+                            if (isColor) {
+                                $('#showItemAttr').append(htmlColor);
+                            } else {
+                                $('#showItemAttr').append(html);
                             }
-                            response.forEach(function(item) {
-                                let isColor = /^#[0-9A-F]{6}$/i.test(item.value);
-                                let html;
-                                if (isColor) {
-                                    html = `
-                                        <div class="col-sm-4" name="item_${attributeId}">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="attrValueId[${attributeId}][]" value="${item.id}" onclick="modalPrdV(this)">
-                                                <label class="form-check-label">
-                                                    <div style="width: 18px; height: 18px; margin: 5px; background-color: ${item.value}; border-radius: 3px;"></div>
-                                                </label>
-                                            </div>
-                                        </div>
-                                    `;
-                                } else {
-                                    html = `
-                                        <div class="col-sm-4" name="item_${attributeId}">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="attrValueId[${attributeId}][]" value="${item.id}" onclick="modalPrdV(${item.id})">
-                                                <label class="form-check-label"><strong class="strong-values">${item.value}</strong></label>
-                                            </div>
-                                        </div>
-                                    `;
-                                }
-                                $(`#attrValue-select${attributeId}`).append(html);
-                            });
-                        } else {
-                            if (divItemAttr.length == 0) {
-                                inputType.value = "Create product";
-                                formAction.action = "{{ route('admin.products.storePrd') }}";
-                            }
-                        }
+                        });
                     },
                     error: function(xhr) {
                         console.log(xhr.responseText);
                     }
                 });
-            }
-            if (checkbox.checked == false && divToRemove == null) {
-                $(`div[name="item_${attributeId}"]`).remove();
-                $(`#attrValue-select${attributeId}`).append(`
-                    <div class="col-sm-12 mb-3 naf-${attributeId}">No attributes found</div>
-                `);
-                divItemAttr = document.querySelectorAll('div[name].col-sm-4');
-                if (divItemAttr.length == 0) {
-                    inputType.value = "Create product";
-                    formAction.action = "{{ route('admin.products.storePrd') }}";
-                }
-            }
-        }
-
-        function modalPrdV(checkbox) {
-            if (checkbox.checked) {
-                let modalHTML = `
-                <div class="accordion" id="accordionExample">
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="heading2">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                data-bs-target="#collapse2" aria-expanded="true" aria-controls="collapse2">ChangeVariant</button>
-                        </h2>
-                        <div class="accordion-collapse collapse" id="collapse2" aria-labelledby="heading2"
-                            data-bs-parent="#accordionExample">
-                            <div class="accordion-body">You can issue either partial or full refunds. There are no fees to refund a
-                                charge, but the fees from the original charge are not returned.</div>
-                        </div>
+            } else {
+                inputType.value = "Create product";
+                $('#showItemAttr').empty();
+                $('#showItemAttr').append(`
+                    <div class="col-12 mb-3">
+                        <label class="form-label" for="">No attributes found</label>
                     </div>
-                </div>
-                `;
+                `);
+                formAction.action = "{{ route('admin.products.storePrd') }}";
             }
-            console.log(checkbox.checked);
         }
     </script>
     <script>

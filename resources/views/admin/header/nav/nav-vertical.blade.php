@@ -109,6 +109,13 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="{{ route('admin.tags.listTags') }}">
+                                <div class="d-flex align-items-center">
+                                    <span class="nav-link-text ps-1">Tags</span>
+                                </div>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link dropdown-indicator" href="#product" data-bs-toggle="collapse"
                                 aria-expanded="false" aria-controls="e-commerce">
                                 <div class="d-flex align-items-center">
