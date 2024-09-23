@@ -38,7 +38,6 @@ Route::prefix('admin')->as('admin.')->group(function () {
             Route::get('/', [ProductController::class, 'listProduct'])->name('listPrd');
             Route::get('create', [ProductController::class, 'create'])->name('createPrd');
             Route::get('attrValue', [ProductController::class, 'getAttrValue'])->name('attrValue');
-            Route::post('variantPrd', [ProductController::class, 'variantPrd'])->name('variantPrd');
             Route::post('store', [ProductController::class, 'store'])->name('storePrd');
         });
     // Route quan ly tags

@@ -30,12 +30,9 @@
                         @csrf
                         <div class="col-auto">
                             <label class="form-label" for="autoSizingInput">Name</label>
-                            <input class="form-control" id="autoSizingInput" type="text" name="name" />
+                            <input class="form-control" id="autoSizingInput" type="text" name="name" value="{{ old('name') }}"/>
                             @error('name')
                                 <div class="alert alert-danger border-0 d-flex align-items-center" role="alert">
-                                    <div class="bg-danger me-3 icon-item">
-                                        <span class="fas fa-check-circle text-white fs-6"></span>
-                                    </div>
                                     <p class="mb-0 flex-1">{{ $message }}</p>
                                     <button class="btn-close" type="button" data-bs-dismiss="alert"
                                         aria-label="Close"></button>

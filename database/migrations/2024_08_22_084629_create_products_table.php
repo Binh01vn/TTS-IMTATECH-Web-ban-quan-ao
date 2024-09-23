@@ -23,13 +23,12 @@ return new class extends Migration {
             $table->integer('sale_percent')->nullable()->default(0);
             $table->date('start_date')->nullable()->comment('ngày bắt đầu khuyến mại');
             $table->date('end_date')->nullable()->comment('ngày kết thúc khuyến mại');
-            $table->string('description')->nullable()->comment('mô tả sản phẩm');
-            $table->string('material')->nullable()->comment('chất liệu sản phẩm');
-            $table->string('user_manual')->nullable()->comment('hướng dẫn sử dụng');
-
+            $table->text('description')->nullable()->comment('mô tả sản phẩm');
+            $table->text('material')->nullable()->comment('chất liệu sản phẩm');
+            $table->text('user_manual')->nullable()->comment('hướng dẫn sử dụng');
+            $table->bigInteger('quantity')->nullable()->default(0);
             $table->unsignedBigInteger('views')->default(0);
             $table->boolean('is_active')->default(true);
-            $table->boolean('is_new')->default(true);
             $table->softDeletes();
             $table->timestamps();
         });

@@ -23,6 +23,16 @@
             <div class="card mb-3">
                 <div class="card-header">
                     <div class="row flex-between-center">
+                        @if (session('success'))
+                            <div class="col-md">
+                                <h5 class="mb-0 text-success">{{ session('success') }}</h5>
+                            </div>
+                        @endif
+                        @if (session('error'))
+                            <div class="col-md">
+                                <h5 class="mb-0 text-danger">{{ session('error') }}</h5>
+                            </div>
+                        @endif
                         <div class="col-md">
                             <h5 class="mb-2 mb-md-0">Add a product</h5>
                         </div>
@@ -41,8 +51,24 @@
                         <div class="row gx-2">
                             <div class="col-12 mb-3">
                                 <label class="form-label" for="product-name">Product name:</label>
-                                <input class="form-control" id="productName" type="text" name="name" />
+                                <input class="form-control" id="productName" type="text" name="name"
+                                    value="{{ old('name') }}" />
                             </div>
+                            @error('name')
+                                <div class="col-12 mb-3">
+                                    <label for="" class="form-label text-danger">{{ $message }}</label>
+                                </div>
+                            @enderror
+                            @error('slug')
+                                <div class="col-12 mb-3">
+                                    <label for="" class="form-label text-danger">{{ $message }}</label>
+                                </div>
+                            @enderror
+                            @error('sku')
+                                <div class="col-12 mb-3">
+                                    <label for="" class="form-label text-danger">{{ $message }}</label>
+                                </div>
+                            @enderror
                         </div>
                     </div>
                 </div>
@@ -54,6 +80,15 @@
                 </div>
                 <div class="card-body">
                     <div class="row gx-2" id="gallery_list">
+                        @if ($errors->has('product_galleries.*'))
+                            <div class="alert alert-danger">
+                                @foreach ($errors->get('product_galleries.*') as $error)
+                                    @foreach ($error as $message)
+                                        <p>{{ $message }}</p>
+                                    @endforeach
+                                @endforeach
+                            </div>
+                        @endif
                         <div class="col-12 mb-4">
                             <button type="button" class="btn btn-success" onclick="addImageGallery()">Thêm ảnh</button>
                         </div>
@@ -75,15 +110,15 @@
                     <div class="row gx-2">
                         <div class="col-12 mb-3">
                             <label class="form-label" for="product-description">Product description:</label>
-                            <textarea class="form-control" id="description" name="description"></textarea>
+                            <textarea class="form-control" id="description" name="description">{{ old('description') }}</textarea>
                         </div>
                         <div class="col-6 mb-3">
                             <label class="form-label" for="product-description">Product material:</label>
-                            <textarea class="form-control" id="material" name="material"></textarea>
+                            <textarea class="form-control" id="material" name="material">{{ old('material') }}</textarea>
                         </div>
                         <div class="col-6 mb-3">
                             <label class="form-label" for="product-description">User manual:</label>
-                            <textarea class="form-control" id="user_manual" name="user_manual"></textarea>
+                            <textarea class="form-control" id="user_manual" name="user_manual">{{ old('user_manual') }}</textarea>
                         </div>
                         {{-- <div class="col-sm-12 mb-3">
                             <label class="form-label" for="import-status">Product Attribute:</label>
@@ -183,7 +218,9 @@
                                 </div>
                             </div>
                             <div class="col-sm-10">
-                                <div class="row" id="attrValue-select{{ $itemAttr->id }}">
+                                <div class="row">
+                                    <div class="col-md-4 row" id="attrValue-select{{ $itemAttr->id }}"></div>
+                                    <div class="col-md-8 row" id="select-variant{{ $itemAttr->id }}"></div>
                                     <div class="col-sm-12 mb-3 naf-{{ $itemAttr->id }}">No attributes found</div>
                                 </div>
                             </div>
@@ -197,7 +234,7 @@
                 {{-- CATEGORY --}}
                 <div class="card mb-3">
                     <div class="card-header bg-body-tertiary">
-                        <h6 class="mb-0">Categories</h6>
+                        <h6 class="mb-0">Categories - Image thumbnail</h6>
                     </div>
                     <div class="card-body">
                         <div class="row gx-2">
@@ -212,6 +249,15 @@
                                     @endforeach
                                 </select>
                             </div>
+                            <div class="col-12 mb-3">
+                                <label class="form-label" for="image_thumbnail">Image thumbnail:</label>
+                                <input type="file" class="form-control" name="image_thumbnail" id="image_thumbnail">
+                            </div>
+                            @error('image_thumbnail')
+                                <div class="col-12 mb-3">
+                                    <label for="" class="form-label text-danger">{{ $message }}</label>
+                                </div>
+                            @enderror
                         </div>
                     </div>
                 </div>
@@ -242,18 +288,10 @@
                             <div class="col-12 mb-4">
                                 <label class="form-label" for="price_default">Price regular:</label>
                                 <input class="form-control" id="price_default" type="number" min="0"
-                                    name="price_default" />
+                                    name="price_default" value="{{ old('price_default') }}" />
                             </div>
-                            <div class="col-12 mb-4">
-                                <label class="form-label" for="sale_percent">Discount in percentage:</label>
-                                <input class="form-control" id="sale_percent" type="number" max="100"
-                                    min="0" name="sale_percent" />
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label" for="price_sale">Price final:</label>
-                                <input class="form-control" id="price_sale" type="number" min="0"
-                                    name="price_sale" />
-                            </div>
+                            <div class="row gx-2 loadP"></div>
+                            <div class="row gx-2 loadD"></div>
                         </div>
                     </div>
                 </div>
@@ -289,10 +327,12 @@
                                 value="1" checked />
                             <label class="form-check-label" for="flexSwitchCheckDefault">Is Active</label>
                         </div>
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" id="flexSwitchCheckChecked" type="checkbox" name="is_new"
-                                value="1" checked />
-                            <label class="form-check-label" for="flexSwitchCheckChecked">Is Product New</label>
+                        <div class="row gx-2">
+                            <div class="col-12 mb-4">
+                                <label class="form-label" for="quantity">Product quantity:</label>
+                                <input class="form-control" id="quantity" type="number" min="0"
+                                    name="quantity" value="{{ old('quantity') }}" />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -327,13 +367,124 @@
 
 @section('js-setting')
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let priceDefaultInput = document.getElementById('price_default');
+            let priceSaleInput, salePercentInput;
+            let debounceTimeout;
+            let priceRangeContainer = document.querySelector('.row.gx-2.loadP');
+            let dateRangeContainer = document.querySelector('.row.gx-2.loadD');
+
+            function updateFormP() {
+                let priceDefaultValue = parseFloat(priceDefaultInput.value) || 0;
+                if (priceDefaultValue > 0) {
+                    priceRangeContainer.innerHTML = `
+                    <div class="col-12 mb-4">
+                        <label class="form-label" for="sale_percent">Discount in percentage:</label>
+                        <input class="form-control" id="sale_percent" type="number" max="100"
+                            min="0" name="sale_percent" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="price_sale">Price sale:</label>
+                        <input class="form-control" id="price_sale" type="number" min="0"
+                            name="price_sale" />
+                    </div>
+                `;
+                    priceSaleInput = document.getElementById('price_sale');
+                    salePercentInput = document.getElementById('sale_percent');
+                    priceSaleInput.addEventListener('input', debounce(
+                        () => priceSaleChange(priceDefaultValue, salePercentInput.value),
+                        500));
+                    salePercentInput.addEventListener('input', debounce(salePercentChange, 500));
+                } else {
+                    priceRangeContainer.innerHTML = '';
+                }
+            }
+
+            function debounce(func, delay) {
+                let timeout;
+                return function(...args) {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func.apply(this, args), delay);
+                };
+            }
+
+            function salePercentChange() {
+                let priceSaleV = parseFloat(document.getElementById('price_sale').value);
+                let salePercentValue = parseFloat(salePercentInput.value);
+                if (salePercentValue > 0) {
+                    if (salePercentValue >= 100) {
+                        salePercentInput.value = null;
+                        salePercentValue = parseFloat(salePercentInput.value);
+                        if ((!isNaN(priceSaleV) && priceSaleV > 0) && dateRangeContainer.innerHTML != '') {
+                            return alert('Giá khuyến mại % phải nhỏ hơn 100%!');
+                        } else {
+                            dateRangeContainer.innerHTML = '';
+                            return alert('Giá khuyến mại % phải nhỏ hơn 100%!');
+                        }
+                    } else {
+                        dateRangeContainer.innerHTML = `
+                        <div class="col-6">
+                            <label for="" class="form-label">Start date:</label>
+                            <input type="date" class="form-control" name="start_date">
+                        </div>
+                        <div class="col-6">
+                            <label for="" class="form-label">End date:</label>
+                            <input type="date" class="form-control" name="end_date">
+                        </div>
+                    `;
+                    }
+                } else {
+                    if ((!isNaN(priceSaleV) && priceSaleV > 0) && dateRangeContainer.innerHTML != '') {
+                        return;
+                    } else {
+                        dateRangeContainer.innerHTML = '';
+                    }
+                }
+            }
+
+            function priceSaleChange(priceDefaultValue, salePercentValue) {
+                let salePercentV = parseFloat(salePercentValue);
+                let priceSaleValue = parseFloat(priceSaleInput.value);
+                if (priceSaleValue > 0) {
+                    if (priceSaleValue >= priceDefaultValue) {
+                        priceSaleInput.value = null;
+                        priceSaleValue = parseFloat(priceSaleInput.value);
+                        if ((!isNaN(salePercentV) && salePercentV > 0) && dateRangeContainer.innerHTML != '') {
+                            return alert('Giá khuyến mại phải nhỏ hơn giá gốc!');
+                        } else {
+                            dateRangeContainer.innerHTML = '';
+                            return alert('Giá khuyến mại phải nhỏ hơn giá gốc!');
+                        }
+                    } else {
+                        dateRangeContainer.innerHTML = `
+                        <div class="col-6">
+                            <label for="" class="form-label">Start date:</label>
+                            <input type="date" class="form-control" name="start_date">
+                        </div>
+                        <div class="col-6">
+                            <label for="" class="form-label">End date:</label>
+                            <input type="date" class="form-control" name="end_date">
+                        </div>
+                    `;
+                    }
+                } else {
+                    if ((!isNaN(salePercentV) && salePercentV > 0) && dateRangeContainer.innerHTML != '') {
+                        return;
+                    } else {
+                        dateRangeContainer.innerHTML = '';
+                    }
+                }
+            }
+            // Lắng nghe sự kiện khi người dùng thay đổi giá trị trong input
+            priceDefaultInput.addEventListener('input', debounce(updateFormP, 500));
+        });
+
         function getAttrValue(checkbox) {
             let urlAttrValue = `{{ route('admin.products.attrValue') }}`;
             let inputType = document.querySelector('input[type="submit"].btn.btn-primary');
             let formAction = document.querySelector('form[method="POST"].row.g-0');
             let attributeId = checkbox.value;
             let divToRemove = document.querySelector(`.col-sm-12.mb-3.naf-${attributeId}`);
-            let divItemAttr = document.querySelectorAll('div[name].col-sm-4');
 
             if (checkbox.checked == true && attributeId > 0) {
                 $.ajax({
@@ -343,44 +494,35 @@
                         attribute_id: attributeId
                     },
                     success: function(response) {
-                        if (response.length > 0) {
-                            inputType.value = "Next";
-                            formAction.action = "{{ route('admin.products.variantPrd') }}";
-                            if (divToRemove) {
-                                divToRemove.remove();
-                            }
-                            response.forEach(function(item) {
-                                let isColor = /^#[0-9A-F]{6}$/i.test(item.value);
-                                let html;
-                                if (isColor) {
-                                    html = `
+                        if (divToRemove && response.length > 0) {
+                            divToRemove.remove();
+                        }
+                        response.forEach(function(item) {
+                            let isColor = /^#[0-9A-F]{6}$/i.test(item.value);
+                            let html;
+                            if (isColor == true) {
+                                html = `
                                         <div class="col-sm-4" name="item_${attributeId}">
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="attrValueId[${attributeId}][]" value="${item.id}" onclick="modalPrdV(this)">
+                                                <input class="form-check-input" type="checkbox" name="attrValue[${attributeId}][${item.id}]" value="${item.value}" onclick="modalPrdV(this)">
                                                 <label class="form-check-label">
                                                     <div style="width: 18px; height: 18px; margin: 5px; background-color: ${item.value}; border-radius: 3px;"></div>
                                                 </label>
                                             </div>
                                         </div>
                                     `;
-                                } else {
-                                    html = `
+                            } else {
+                                html = `
                                         <div class="col-sm-4" name="item_${attributeId}">
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="attrValueId[${attributeId}][]" value="${item.id}" onclick="modalPrdV(${item.id})">
+                                                <input class="form-check-input" type="checkbox" name="attrValue[${attributeId}][${item.id}]" value="${item.value}" onclick="modalPrdV(this)">
                                                 <label class="form-check-label"><strong class="strong-values">${item.value}</strong></label>
                                             </div>
                                         </div>
                                     `;
-                                }
-                                $(`#attrValue-select${attributeId}`).append(html);
-                            });
-                        } else {
-                            if (divItemAttr.length == 0) {
-                                inputType.value = "Create product";
-                                formAction.action = "{{ route('admin.products.storePrd') }}";
                             }
-                        }
+                            $(`#attrValue-select${attributeId}`).append(html);
+                        });
                     },
                     error: function(xhr) {
                         console.log(xhr.responseText);
@@ -392,33 +534,104 @@
                 $(`#attrValue-select${attributeId}`).append(`
                     <div class="col-sm-12 mb-3 naf-${attributeId}">No attributes found</div>
                 `);
-                divItemAttr = document.querySelectorAll('div[name].col-sm-4');
-                if (divItemAttr.length == 0) {
-                    inputType.value = "Create product";
-                    formAction.action = "{{ route('admin.products.storePrd') }}";
-                }
+                $(`.accordion.col-sm-12.prdV-${attributeId}`).remove();
             }
         }
 
         function modalPrdV(checkbox) {
-            if (checkbox.checked) {
-                let modalHTML = `
-                <div class="accordion" id="accordionExample">
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="heading2">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                data-bs-target="#collapse2" aria-expanded="true" aria-controls="collapse2">ChangeVariant</button>
-                        </h2>
-                        <div class="accordion-collapse collapse" id="collapse2" aria-labelledby="heading2"
-                            data-bs-parent="#accordionExample">
-                            <div class="accordion-body">You can issue either partial or full refunds. There are no fees to refund a
-                                charge, but the fees from the original charge are not returned.</div>
+            let inputValue = checkbox.value;
+            let [_, attributeId, itemId] = checkbox.name.match(/\[(\d+)\]\[(\d+)\]/) || [];
+            let isColor = /^#[0-9A-F]{6}$/i.test(inputValue);
+            let modalHTML;
+            if (checkbox.checked == true) {
+                if (isColor == true) {
+                    modalHTML = `
+                    <div class="accordion col-sm-12 prdV-${attributeId}" style="margin-bottom: 5px;" id="prdVariant-${itemId}">
+                        <div class="accordion-item" style="">
+                            <h2 class="accordion-header" id="heading${itemId}">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#variant${itemId}" aria-expanded="true" aria-controls="variant${itemId}">Variant - <div style="width: 18px; height: 18px; margin: 5px; background-color: ${inputValue}; border-radius: 3px;"></div></button>
+                            </h2>
+                            <div class="accordion-collapse collapse" id="variant${itemId}" aria-labelledby="heading${itemId}"
+                                data-bs-parent="#prdVariant-${itemId}">
+                                <div class="accordion-body row">
+                                    <div class="col-12 mb-4">
+                                        <label class="form-label" for="price_default">Price regular:</label>
+                                        <input class="form-control" id="price_default" type="number" min="0"
+                                            name="prdV[${attributeId}][${itemId}]['price_dafault']" />
+                                    </div>
+                                    <div class="col-12 mb-4">
+                                        <label class="form-label" for="price_sale">Price sale:</label>
+                                        <input class="form-control" id="price_sale" type="number" min="0"
+                                            name="prdV[${attributeId}][${itemId}]['price_sale']" />
+                                    </div>
+                                    <div class="col-6 mb-4">
+                                        <label class="form-label" for="price_default">Start date:</label>
+                                        <input class="form-control" id="price_default" type="date"
+                                            name="prdV[${attributeId}][${itemId}]['start_date']" />
+                                    </div>
+                                    <div class="col-6 mb-4">
+                                        <label class="form-label" for="price_default">End date:</label>
+                                        <input class="form-control" id="price_default" type="date"
+                                            name="prdV[${attributeId}][${itemId}]['end_date']" />
+                                    </div>
+                                    <div class="col-12 mb-4">
+                                        <label class="form-label" for="price_sale">Quantity:</label>
+                                        <input class="form-control" id="price_sale" type="number" value="0"
+                                            name="prdV[${attributeId}][${itemId}]['quantity']" />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                `;
+                    `;
+                } else {
+                    modalHTML = `
+                    <div class="accordion col-sm-12 prdV-${attributeId}" style="margin-top: 5px;" id="prdVariant-${itemId}">
+                        <div class="accordion-item" style="">
+                            <h2 class="accordion-header" id="heading${itemId}">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#variant${itemId}" aria-expanded="true" aria-controls="variant${itemId}">Variant - ${inputValue}</button>
+                            </h2>
+                            <div class="accordion-collapse collapse" id="variant${itemId}" aria-labelledby="heading${itemId}"
+                                data-bs-parent="#prdVariant-${itemId}">
+                                <div class="accordion-body row">
+                                    <div class="col-12 mb-4">
+                                        <label class="form-label" for="price_default">Price regular:</label>
+                                        <input class="form-control" id="price_default" type="number" min="0"
+                                            name="prdV[${attributeId}][${itemId}]['price_dafault']" />
+                                    </div>
+                                    <div class="col-12 mb-4">
+                                        <label class="form-label" for="price_sale">Price sale:</label>
+                                        <input class="form-control" id="price_sale" type="number" min="0"
+                                            name="prdV[${attributeId}][${itemId}]['price_sale']" />
+                                    </div>
+                                    <div class="col-6 mb-4">
+                                        <label class="form-label" for="price_default">Start date:</label>
+                                        <input class="form-control" id="price_default" type="date"
+                                            name="prdV[${attributeId}][${itemId}]['start_date']" />
+                                    </div>
+                                    <div class="col-6 mb-4">
+                                        <label class="form-label" for="price_default">End date:</label>
+                                        <input class="form-control" id="price_default" type="date"
+                                            name="prdV[${attributeId}][${itemId}]['end_date']" />
+                                    </div>
+                                    <div class="col-12 mb-4">
+                                        <label class="form-label" for="price_sale">Quantity:</label>
+                                        <input class="form-control" id="price_sale" type="number" value="0"
+                                            name="prdV[${attributeId}][${itemId}]['quantity']" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                }
+                $(`#select-variant${attributeId}`).append(modalHTML);
             }
-            console.log(checkbox.checked);
+            if (checkbox.checked == false) {
+                $(`#prdVariant-${itemId}`).remove();
+            }
         }
     </script>
     <script>
@@ -440,9 +653,7 @@
         }
 
         function removeImageGallery(id) {
-            if (confirm('Chắc chắn xóa không?')) {
-                $('#' + id).remove();
-            }
+            $('#' + id).remove();
         }
     </script>
     <script type="text/javascript">

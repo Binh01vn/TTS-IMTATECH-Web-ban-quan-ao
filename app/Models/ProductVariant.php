@@ -14,15 +14,18 @@ class ProductVariant extends Model
         'sku',
         'price_default',
         'price_sale',
-        'sale_percent',
+        'start_date',
+        'end_date',
         'quantity',
     ];
 
-    public function product(){
+    public function product()
+    {
         return $this->belongsTo(Product::class);
     }
 
-    public function attributeValues(){
+    public function attributeValues()
+    {
         return $this->belongsToMany(AttributeValue::class, 'product_variant_value_id');
     }
 }

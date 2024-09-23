@@ -48,7 +48,7 @@
                                                 preg_match('/^rgb\(\s*(\d{1,3}%?\s*,\s*){2}\d{1,3}%?\s*\)$/', $value->value) ||
                                                 preg_match('/^hsl\(\s*\d{1,3}\s*,\s*\d{1,3}%\s*,\s*\d{1,3}%\s*\)$/', $value->value))
                                             <div class="col-sm-4 mb-3 d-flex" id="valueID-{{ $value->id }}">
-                                                <input type="color" class="form-control inputColor"
+                                                <input type="color" class="form-control form-control-color inputColor"
                                                     name="update[{{ $value->id }}]" value="{{ $value->value }}">
                                             </div>
                                         @else

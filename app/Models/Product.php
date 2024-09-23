@@ -19,16 +19,18 @@ class Product extends Model
         'price_default',
         'price_sale',
         'sale_percent',
+        'start_date',
+        'end_date',
         'description',
         'material',
         'user_manual',
+        'quantity',
         'views',
         'is_active',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
-        'is_new' => 'boolean',
     ];
 
     public function category()
