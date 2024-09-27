@@ -11,6 +11,8 @@ class ProductVariant extends Model
 
     protected $fillable = [
         'product_id',
+        'color_attribute_id',
+        'size_attribute_id',
         'sku',
         'price_default',
         'price_sale',
@@ -23,9 +25,12 @@ class ProductVariant extends Model
     {
         return $this->belongsTo(Product::class);
     }
-
-    public function attributeValues()
+    public function color()
     {
-        return $this->belongsToMany(AttributeValue::class, 'product_variant_value_id');
+        return $this->belongsTo(ColorAttribute::class, 'color_attribute_id', 'id');
+    }
+    public function size()
+    {
+        return $this->belongsTo(SizeAttribute::class, 'size_attribute_id', 'id');
     }
 }

@@ -1658,7 +1658,7 @@ ul.categories-list li {
 }
 .dropdown-large .cart-product {
 	width: 60px;
-	height: 60px;
+	height: auto;
 	display: flex;
 	align-items: center;
 	border-radius: 0px;

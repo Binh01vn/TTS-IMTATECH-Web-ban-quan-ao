@@ -6,7 +6,7 @@
                 @if (Route::has('auth.login'))
                     @auth
                         <li class="nav-item">
-                            <a class="nav-link" href="order-tracking.html">Track Order</a>
+                            <a class="nav-link" href="{{ route('dashboard.index') }}">My Account</a>
                         </li>
                     @else
                         <li class="nav-item">

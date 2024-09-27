@@ -11,12 +11,13 @@ class OrderItem extends Model
 
     protected $fillable = [
         'order_id',
-        'product_variant_id',
+        'product_id',
         'quantity',
         'product_name',
         'product_sku',
         'product_img_thumbnail',
         'product_price_regular',
         'product_price_sale',
+        'product_sale_discount',
     ];
 }

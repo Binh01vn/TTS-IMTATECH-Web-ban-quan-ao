@@ -5,16 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Attribute extends Model
+class ColorAttribute extends Model
 {
     use HasFactory;
-
     protected $fillable = [
-        'name',
+        'colorValue',
     ];
-
-    public function values(){
-        // quan he 1-n
-        return $this->hasMany(AttributeValue::class);
-    }
 }

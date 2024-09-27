@@ -10,6 +10,7 @@ class Order extends Model
     use HasFactory;
 
     const STATUS_ORDER = [
+        'reorder' => 'Đặt lại hàng',
         'pending' => 'Chờ xác nhận',
         'confirmed' => 'Đã xác nhận',
         'preparing_goods' => 'Đang chuẩn bị hàng',
@@ -39,5 +40,11 @@ class Order extends Model
         'status_order',
         'payment',
         'total_price',
+        'date_create_order',
     ];
+    public function items()
+    {
+        // quan he 1-n
+        return $this->hasMany(OrderItem::class);
+    }
 }

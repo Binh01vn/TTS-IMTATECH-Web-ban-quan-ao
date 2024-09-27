@@ -1,15 +1,47 @@
 @extends('layouts.master')
 
 @section('title')
-    Add new Product
+    Edit Product
 @endsection
 @section('css-libs')
     <link href="{{ asset('theme/admin/vendors/choices/choices.min.css') }}" rel="stylesheet">
     <link href="{{ asset('theme/admin/vendors/flatpickr/flatpickr.min.css') }}" rel="stylesheet">
 @endsection
+@section('css-setting')
+    <style>
+        .image-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .image-container .remove-btn {
+            position: absolute;
+            top: 0px;
+            right: 15px;
+            background-color: #ff4d4f;
+            border: none;
+            padding: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .image-container .remove-btn .far {
+            color: white;
+        }
+
+        .image {
+            display: block;
+            width: 150px;
+            height: auto;
+            border-radius: 5px;
+        }
+    </style>
+@endsection
 @section('contents')
-    <form class="row g-0" action="{{ route('admin.products.storePrd') }}" method="POST" enctype="multipart/form-data">
+    <form class="row g-0" action="{{ route('admin.products.updateProduct', $modelPrd->slug) }}" method="POST"
+        enctype="multipart/form-data">
         @csrf
+        @method('PUT')
         <div class="col-lg-12 pe-lg-12">
             <div class="card mb-3">
                 <div class="card-header">
@@ -25,7 +57,7 @@
                                 </div>
                             @else
                                 <div class="col-md">
-                                    <h5 class="mb-2 mb-md-0">Add a product</h5>
+                                    <h5 class="mb-2 mb-md-0">Update a product</h5>
                                 </div>
                             @endif
                         @endif
@@ -45,7 +77,7 @@
                             <div class="col-12 mb-3">
                                 <label class="form-label" for="product-name">Product name:</label>
                                 <input class="form-control" id="productName" type="text" name="name"
-                                    value="{{ old('name') }}" />
+                                    value="{!! old('name') ? old('name') : $modelPrd->name !!}" />
                             </div>
                             @error('name')
                                 <div class="col-12 mb-3">
@@ -81,6 +113,21 @@
                             <div class="alert alert-danger">{{ session('product_galleries') }}</div>
                         @endif
                         <div class="col-12 mb-4">
+                            <div class="row">
+                                @foreach ($modelPrd->galleries as $imageG)
+                                    <div
+                                        class="col-auto mb-3 position-relative image-container imageGallery-{{ $imageG->id }}">
+                                        <img src="{{ \Storage::url($imageG->image) }}" alt="....." width="150px"
+                                            class="image">
+                                        <button type="button" class="btn btn-danger remove-btn"
+                                            onclick="removeImage(idImageG={{ $imageG->id }}, urlI='{{ route('admin.products.delImageG', $imageG->id) }}')">
+                                            <span class="far fa-trash-alt"></span>
+                                        </button>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                        <div class="col-12 mb-4">
                             <button type="button" class="btn btn-success" onclick="addImageGallery()">Thêm ảnh</button>
                         </div>
                         <div class="col-12 mb-4" id="gallery_default_item">
@@ -101,95 +148,22 @@
                     <div class="row gx-2">
                         <div class="col-12 mb-3">
                             <label class="form-label" for="product-description">Product description:</label>
-                            <textarea class="form-control" id="description" name="description">{{ old('description') }}</textarea>
+                            <textarea class="form-control" id="description" name="description">
+                                {!! old('description') ? old('description') : $modelPrd->description !!}
+                            </textarea>
                         </div>
                         <div class="col-lg-6 mb-3 ps-lg-2">
                             <label class="form-label" for="product-description">Product material:</label>
-                            <textarea class="form-control" id="material" name="material">{{ old('material') }}</textarea>
+                            <textarea class="form-control" id="material" name="material">
+                                {!! old('material') ? old('material') : $modelPrd->material !!}
+                            </textarea>
                         </div>
                         <div class="col-lg-6 mb-3 ps-lg-2">
                             <label class="form-label" for="product-description">User manual:</label>
-                            <textarea class="form-control" id="user_manual" name="user_manual">{{ old('user_manual') }}</textarea>
+                            <textarea class="form-control" id="user_manual" name="user_manual">
+                                {!! old('user_manual') ? old('user_manual') : $modelPrd->user_manual !!}
+                            </textarea>
                         </div>
-                        {{-- <div class="col-sm-12 mb-3">
-                            <label class="form-label" for="import-status">Product Attribute:</label>
-                            <select class="form-select" id="nameAttr" name="nameAttr"
-                                onchange="getAttrValue(urlAttrValue='{{ route('admin.products.attrValue') }}')">
-                                <option value="" selected>Trống</option>
-                                @foreach ($dataAttr as $itemAttr)
-                                    <option value="{{ $itemAttr->id }}">{{ $itemAttr->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-sm-12 mb-3">
-                            <div class="row gx-2 flex-between-center mb-3" id="showItemAttr">No product attribute found
-                            </div>
-                        </div> --}}
-                        {{-- <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="origin-country">Country of Origin:</label>
-                            <select class="form-select" id="origin-country" name="origin-country">
-                                <option value="">Select </option>
-                                <option value="China">China</option>
-                                <option value="India">India</option>
-                                <option value="United States">United States</option>
-                                <option value="Indonesia">Indonesia</option>
-                                <option value="Pakistan">Pakistan</option>
-                                <option value="Brazil">Brazil</option>
-                                <option value="Nigeria">Nigeria</option>
-                                <option value="Bangladesh">Bangladesh</option>
-                                <option value="Russia">Russia</option>
-                                <option value="Japan">Japan</option>
-                                <option value="Mexico">Mexico</option>
-                                <option value="Philippines">Philippines</option>
-                                <option value="Egypt">Egypt</option>
-                                <option value="Vietnam">Vietnam</option>
-                                <option value="Ethiopia">Ethiopia</option>
-                                <option value="DR Congo">DR Congo</option>
-                                <option value="Iran">Iran</option>
-                                <option value="Turkey">Turkey</option>
-                                <option value="Germany">Germany</option>
-                                <option value="France">France</option>
-                            </select>
-                        </div>
-                        <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="origin-country">Country of Origin:</label>
-                            <select class="form-select" id="origin-country" name="origin-country">
-                                <option value="">Select </option>
-                                <option value="China">China</option>
-                                <option value="India">India</option>
-                                <option value="United States">United States</option>
-                                <option value="Indonesia">Indonesia</option>
-                                <option value="Pakistan">Pakistan</option>
-                                <option value="Brazil">Brazil</option>
-                                <option value="Nigeria">Nigeria</option>
-                                <option value="Bangladesh">Bangladesh</option>
-                                <option value="Russia">Russia</option>
-                                <option value="Japan">Japan</option>
-                                <option value="Mexico">Mexico</option>
-                                <option value="Philippines">Philippines</option>
-                                <option value="Egypt">Egypt</option>
-                                <option value="Vietnam">Vietnam</option>
-                                <option value="Ethiopia">Ethiopia</option>
-                                <option value="DR Congo">DR Congo</option>
-                                <option value="Iran">Iran</option>
-                                <option value="Turkey">Turkey</option>
-                                <option value="Germany">Germany</option>
-                                <option value="France">France</option>
-                            </select>
-                        </div>
-                        <div class="col-12 mb-3">
-                            <label class="form-label" for="release-date">Release Date:</label>
-                            <input class="form-control datetimepicker" id="release-date" type="text"
-                                data-options='{"dateFormat":"d/m/y","disableMobile":true}' />
-                        </div>
-                        <div class="col-12 mb-3">
-                            <label class="form-label" for="warranty-length">Warranty Lenght:</label>
-                            <input class="form-control" id="warranty-length" type="text" />
-                        </div>
-                        <div class="col-12 mb-3">
-                            <label class="form-label" for="warranty-policy">Warranty Policy:</label>
-                            <input class="form-control" id="warranty-policy" type="text" />
-                        </div> --}}
                     </div>
                 </div>
             </div>
@@ -279,9 +253,11 @@
                     <div class="card-body">
                         <div class="row gx-2">
                             <div class="col-12 mb-3">
-                                <label class="form-label" for="category_id">Select category:</label>
+                                <label class="form-label" for="category_id">Select category:
+                                    {!! $modelPrd->category['name'] !!}</label>
                                 <select class="form-select" id="category_id" name="category_id">
-                                    @foreach ($categoryParent as $parent)
+                                    <option value="nullSlt">Chọn danh mục</option>
+                                    @foreach ($categories as $parent)
                                         @php($each = '')
                                         @include('admin.contents.Product.nested-category', [
                                             'category' => $parent,
@@ -293,6 +269,10 @@
                                 <label class="form-label" for="image_thumbnail">Image thumbnail:</label>
                                 <input type="file" class="form-control" name="image_thumbnail" id="image_thumbnail">
                             </div>
+                            <div class="col-12 mb-3">
+                                <img src="{{ \Storage::url($modelPrd->image_thumbnail) }}" alt="....."
+                                    width="364px">
+                            </div>
                             @error('image_thumbnail')
                                 <div class="col-12 mb-3">
                                     <label for="" class="form-label text-danger">{{ $message }}</label>
@@ -301,10 +281,21 @@
                         </div>
                     </div>
                 </div>
-                {{-- TAG --}}
+                {{-- TAGS --}}
                 <div class="card mb-3">
                     <div class="card-header bg-body-tertiary">
-                        <h6 class="mb-0">Tags</h6>
+                        <h6 class="mb-0 d-flex">Tags:&ensp;
+                            @foreach ($modelPrd->tags as $item)
+                                <span class="badge bg-info tagItem-{{ $item->id }}">{{ $item->name }}&ensp;
+                                    <input class="far fa-trash-alt" type="button"
+                                        onclick="removeTag(idTag={{ $item->id }}, urlTag='{{ route('admin.products.delTag', $item->id) }}')">
+                                </span> &ensp;
+                            @endforeach
+                        </h6>
+                        @error('tags')
+                            <hr>
+                            <h6 class="mb-0 d-flex text-danger">{{ $message }}</h6>
+                        @enderror
                     </div>
                     <div class="card-body">
                         <label for="organizerMultiple">Select tags</label>
@@ -328,42 +319,49 @@
                                     <label for="" class="form-label text-danger">{{ $message }}</label>
                                 </div>
                             @enderror
+                            @error('sale_percent')
+                                <div class="col-12 mb-3">
+                                    <label for="" class="form-label text-danger">{{ $message }}</label>
+                                </div>
+                            @enderror
                             @error('price_sale')
                                 <div class="col-12 mb-3">
                                     <label for="" class="form-label text-danger">{{ $message }}</label>
                                 </div>
                             @enderror
-                            <div class="col-12 mb-4">
+                            <div class="col-12 mb-3">
                                 <label class="form-label" for="price_default">Price regular:</label>
                                 <input class="form-control" id="price_default" type="number" min="0"
-                                    name="price_default" value="{{ old('price_default') }}" />
+                                    name="price_default" value="{!! old('price_default') ? old('price_default') : $modelPrd->price_default !!}" />
                             </div>
-                            <div class="row gx-2 loadP"></div>
-                            <div class="row gx-2 loadD"></div>
+                            <div class="row gx-2 loadP">
+                                <div class="col-12 mb-3">
+                                    <label class="form-label" for="sale_percent">Discount in percentage:</label>
+                                    <input class="form-control" id="sale_percent" type="number" max="100"
+                                        min="0" name="sale_percent" value="{!! old('sale_percent') ? old('sale_percent') : $modelPrd->sale_percent !!}" />
+                                </div>
+                                <div class="col-12 mb-3">
+                                    <label class="form-label" for="price_sale">Price sale:</label>
+                                    <input class="form-control" id="price_sale" type="number" min="0"
+                                        name="price_sale" value="{!! old('price_sale') ? old('price_sale') : $modelPrd->price_sale !!}" />
+                                </div>
+                            </div>
+                            <div class="row gx-2 loadD">
+                                <div class="col-6">
+                                    <label for="" class="form-label">Start date:</label>
+                                    <input type="date" class="form-control" name="start_date"
+                                        value="{!! old('start_date') ? old('start_date') : $modelPrd->start_date !!}">
+                                </div>
+                                <div class="col-6">
+                                    <label for="" class="form-label">End date:</label>
+                                    <input type="date" class="form-control" name="end_date"
+                                        value="{!! old('end_date') ? old('end_date') : $modelPrd->end_date !!}">
+                                    {!! isset($warningDate) ? "<label class='form-label text-warning'>$warningDate</label>" : '' !!}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                {{-- SHIPPING METHOD --}}
-                {{-- <div class="card mb-3">
-                    <div class="card-header bg-body-tertiary">
-                        <h6 class="mb-0">Shipping</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="form-check">
-                            <input class="form-check-input p-2" id="vendor-delivery" type="radio"
-                                name="product-shipping" />
-                            <label class="form-check-label fs-9 fw-normal text-700" for="vendor-delivery">Delivered by
-                                vendor (you)</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input p-2" id="falcon-delivery" type="radio"
-                                name="product-shipping" />
-                            <label class="form-check-label fs-9 fw-normal text-700" for="falcon-delivery">Delivered by
-                                FALCON <span class="badge badge-subtle-warning rounded-pill ms-2">Recommended</span>
-                            </label>
-                        </div>
-                    </div>
-                </div> --}}
                 {{-- STATUS --}}
                 <div class="card mb-3">
                     <div class="card-header bg-body-tertiary">
@@ -372,14 +370,14 @@
                     <div class="card-body">
                         <div class="form-check form-switch">
                             <input class="form-check-input" id="flexSwitchCheckDefault" type="checkbox" name="is_active"
-                                value="1" checked />
+                                value="1" {!! $modelPrd->is_active == 1 ? 'checked' : '' !!} />
                             <label class="form-check-label" for="flexSwitchCheckDefault">Is Active</label>
                         </div>
                         <div class="row gx-2">
                             <div class="col-12 mb-4">
                                 <label class="form-label" for="quantity">Product quantity:</label>
                                 <input class="form-control" id="quantity" type="number" min="0"
-                                    name="quantity" value="{{ old('quantity') }}" />
+                                    name="quantity" value="{!! old('quantity') ? old('quantity') : $modelPrd->quantity !!}" />
                             </div>
                         </div>
                     </div>
@@ -394,7 +392,7 @@
                             <h5 class="mb-2 mb-md-0">You're almost done!</h5>
                         </div>
                         <div class="col-auto">
-                            <input type="submit" class="btn btn-primary" value="Create product">
+                            <input type="submit" class="btn btn-primary" value="Update product">
                         </div>
                     </div>
                 </div>
@@ -597,8 +595,45 @@
                 alert("Yêu cầu chọn giá trị hợp thệ!");
             }
         }
-    </script>
-    <script>
+
+        function removeImage(idImageG, urlI) {
+            if (confirm("Chắc chắn muốn xóa ảnh này?")) {
+                let elementImage = document.querySelector(
+                    `div.col-auto.mb-3.position-relative.image-container.imageGallery-${idImageG}`);
+                $.ajax({
+                    url: urlI,
+                    method: "GET",
+                    dataType: "JSON",
+                    success: function(res) {
+                        $(elementImage).remove();
+                        alert(res.success);
+                    },
+                    error: function(res) {
+                        alert(res.error);
+                    }
+                });
+            }
+        }
+
+        function removeTag(idTag, urlTag) {
+            if (confirm("Chắc chắn muốn xóa tags này?")) {
+                let elementTag = document.querySelector(
+                    `span.badge.bg-info.tagItem-${idTag}`);
+                $.ajax({
+                    url: urlTag,
+                    method: "GET",
+                    dataType: "JSON",
+                    success: function(res) {
+                        $(elementTag).remove();
+                        alert(res.success);
+                    },
+                    error: function(res) {
+                        alert(res.error);
+                    }
+                });
+            }
+        }
+
         function addImageGallery() {
             let id = 'gen' + '_' + Math.random().toString(36).substring(2, 15).toLowerCase();
             let html = `
@@ -618,8 +653,7 @@
         function removeImageGallery(id) {
             $('#' + id).remove();
         }
-    </script>
-    <script>
+
         function initTinyMCE(selector, plugins, toolbar, menubar = false, height = null) {
             tinymce.init({
                 selector: selector,

@@ -66,7 +66,7 @@
                                     </div>
                                 </div>
                                 <div class="col-12 col-lg-7">
-                                    <form action="{{ route('shop.addCart') }}" class="product-info-section p-3"
+                                    <form action="{{ route('cart.addCart') }}" class="product-info-section p-3"
                                         method="POST">
                                         @csrf
                                         <input type="hidden" name="slug" value="{{ $dataPrd->slug }}">

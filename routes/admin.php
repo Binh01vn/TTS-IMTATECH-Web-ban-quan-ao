@@ -2,11 +2,12 @@
 
 use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\TagController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('admin')->as('admin.')->group(function () {
+Route::prefix('admin')->as('admin.')->middleware(['auth.checkAdmin'])->group(function () {
     Route::get('/', function () {
         return view('admin.contents.dashboard.main');
     })->name('dashboard');
@@ -24,12 +25,12 @@ Route::prefix('admin')->as('admin.')->group(function () {
     Route::prefix('attributes')
         ->as('attributes.')
         ->group(function () {
-            Route::get('/', [AttributeController::class, 'listAttributes'])->name('listAttr');
-            Route::post('store', [AttributeController::class, 'store'])->name('storeAttr');
-            Route::get('{id}/delete', [AttributeController::class, 'destroy'])->name('destroyAttr');
-            Route::get('{id}/edit', [AttributeController::class, 'edit'])->name('editAttr');
-            Route::get('{id}/deleteV', [AttributeController::class, 'delete'])->name('delValueAttr');
-            Route::post('{id}/add-create', [AttributeController::class, 'addOrCreate'])->name('addOrCreate');
+            Route::get('/', [AttributeController::class, 'listAttribute'])->name('list');
+            Route::post('createAttrValues', [AttributeController::class, 'createAttrValues'])->name('create');
+            Route::get('{id}/delValueC', [AttributeController::class, 'delValueC'])->name('delValueC');
+            Route::get('{id}/delValueS', [AttributeController::class, 'delValueS'])->name('delValueS');
+            Route::get('{attr}/edit', [AttributeController::class, 'showFormEdit'])->name('edit');
+            Route::post('{attr}/update', [AttributeController::class, 'update'])->name('update');
         });
     // Route quan ly san pham
     Route::prefix('products')
@@ -39,6 +40,11 @@ Route::prefix('admin')->as('admin.')->group(function () {
             Route::get('create', [ProductController::class, 'create'])->name('createPrd');
             Route::get('attrValue', [ProductController::class, 'getAttrValue'])->name('attrValue');
             Route::post('store', [ProductController::class, 'store'])->name('storePrd');
+            Route::get('listProduct', [ProductController::class, 'list'])->name('list');
+            Route::get('editProduct/{slug}', [ProductController::class, 'editProduct'])->name('editProduct');
+            Route::put('updateProduct/{slug}', [ProductController::class, 'updateProduct'])->name('updateProduct');
+            Route::get('{id}/delImageG', [ProductController::class, 'delImageG'])->name('delImageG');
+            Route::get('{id}/delTag', [ProductController::class, 'delTag'])->name('delTag');
         });
     // Route quan ly tags
     Route::prefix('tags')
@@ -47,5 +53,12 @@ Route::prefix('admin')->as('admin.')->group(function () {
             Route::get('/', [TagController::class, 'index'])->name('listTags');
             Route::post('create', [TagController::class, 'create'])->name('createTag');
             Route::get('{id}/destroy', [TagController::class, 'destroy'])->name('deleteTag');
+        });
+    Route::prefix('orders')
+        ->as('orders.')
+        ->group(function () {
+            Route::get('listOrder', [OrderController::class, 'listOrder'])->name('list');
+            Route::post('bulkActions', [OrderController::class, 'bulkActions'])->name('bulkActions');
+            Route::get('{id}/orderDetail', [OrderController::class, 'orderDetail'])->name('detail');
         });
 });

@@ -1,6 +1,6 @@
 @extends('layouts.client')
 @section('title')
-    Account Dashboard
+    @yield('subtitle')
 @endsection
 
 @section('contents')
@@ -11,16 +11,23 @@
             <section class="py-3 border-bottom border-top d-none d-md-flex bg-light">
                 <div class="container">
                     <div class="page-breadcrumb d-flex align-items-center">
-                        <h3 class="breadcrumb-title pe-3">My Account</h3>
+                        @if (session('success'))
+                            <h3 class="breadcrumb-title pe-3 text-success">{{ session('success') }}</h3>
+                        @else
+                            <h3 class="breadcrumb-title pe-3">@yield('breadcrumb')</h3>
+                        @endif
                         <div class="ms-auto">
                             <nav aria-label="breadcrumb">
                                 <ol class="breadcrumb mb-0 p-0">
-                                    <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i>
-                                            Home</a>
+                                    <li class="breadcrumb-item">
+                                        <a href="{{ route('shopHome') }}">
+                                            <i class="bx bx-home-alt"></i> Home
+                                        </a>
                                     </li>
-                                    <li class="breadcrumb-item"><a href="javascript:;">Account</a>
+                                    <li class="breadcrumb-item">
+                                        <a href="{{ route('dashboard.index') }}">Account</a>
                                     </li>
-                                    <li class="breadcrumb-item active" aria-current="page">My Account</li>
+                                    <li class="breadcrumb-item active" aria-current="page">@yield('breadcrumb')</li>
                                 </ol>
                             </nav>
                         </div>
@@ -39,35 +46,35 @@
                                     <div class="card shadow-none mb-3 mb-lg-0 border rounded-0">
                                         <div class="card-body">
                                             <div class="list-group list-group-flush">
-                                                <a href="account-dashboard.html"
-                                                    class="list-group-item active d-flex justify-content-between align-items-center">Dashboard
-                                                    <i class='bx bx-tachometer fs-5'></i>
+                                                <a href="{{ route('dashboard.index') }}"
+                                                    class="list-group-item d-flex justify-content-between align-items-center">
+                                                    Dashboard<i class='bx bx-tachometer fs-5'></i>
                                                 </a>
-                                                <a href="account-orders.html"
-                                                    class="list-group-item d-flex justify-content-between align-items-center bg-transparent">Orders
-                                                    <i class='bx bx-cart-alt fs-5'></i>
+                                                <a href="{{ route('dashboard.listOrders') }}"
+                                                    class="list-group-item d-flex justify-content-between align-items-center bg-transparent">
+                                                    Orders<i class='bx bx-cart-alt fs-5'></i>
                                                 </a>
                                                 <a href="account-downloads.html"
-                                                    class="list-group-item d-flex justify-content-between align-items-center bg-transparent">Downloads
-                                                    <i class='bx bx-download fs-5'></i>
+                                                    class="list-group-item d-flex justify-content-between align-items-center bg-transparent">
+                                                    Downloads<i class='bx bx-download fs-5'></i>
                                                 </a>
                                                 <a href="account-addresses.html"
-                                                    class="list-group-item d-flex justify-content-between align-items-center bg-transparent">Addresses
-                                                    <i class='bx bx-home-smile fs-5'></i>
+                                                    class="list-group-item d-flex justify-content-between align-items-center bg-transparent">
+                                                    Addresses<i class='bx bx-home-smile fs-5'></i>
                                                 </a>
                                                 <a href="account-payment-methods.html"
-                                                    class="list-group-item d-flex justify-content-between align-items-center bg-transparent">Payment
-                                                    Methods <i class='bx bx-credit-card fs-5'></i>
+                                                    class="list-group-item d-flex justify-content-between align-items-center bg-transparent">
+                                                    Payment Methods <i class='bx bx-credit-card fs-5'></i>
                                                 </a>
                                                 <a href="account-user-details.html"
-                                                    class="list-group-item d-flex justify-content-between align-items-center bg-transparent">Account
-                                                    Details <i class='bx bx-user-circle fs-5'></i>
+                                                    class="list-group-item d-flex justify-content-between align-items-center bg-transparent">
+                                                    Account Details <i class='bx bx-user-circle fs-5'></i>
                                                 </a>
                                                 <a href="{{ route('auth.logout') }}"
                                                     class="list-group-item d-flex justify-content-between align-items-center bg-transparent"
                                                     onclick="event.preventDefault();
-                                                    document.getElementById('logout-form').submit();">Logout
-                                                    <i class='bx bx-log-out fs-5'></i>
+                                                    document.getElementById('logout-form').submit();">
+                                                    Logout<i class='bx bx-log-out fs-5'></i>
                                                 </a>
                                                 <form id="logout-form" action="{{ route('auth.logout') }}" method="POST"
                                                     class="d-none">
@@ -77,20 +84,8 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-lg-8">
-                                    <div class="card shadow-none mb-0">
-                                        <div class="card-body">
-                                            <p>Hello <strong>{{ $user->name }}</strong> (not
-                                                <strong>{{ $user->name }}?</strong> <a href="{{ route('auth.logout') }}"
-                                                    onclick="event.preventDefault();document.getElementById('logout-form').submit();">Logout</a>)
-                                            </p>
-                                            <p>From your account dashboard you can view your Recent Orders, manage your
-                                                shipping and billing addesses and edit your password and account details</p>
-                                        </div>
-                                    </div>
-                                </div>
+                                @yield('ctnt-dashboard')
                             </div>
-                            <!--end row-->
                         </div>
                     </div>
                 </div>

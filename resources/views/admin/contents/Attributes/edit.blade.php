@@ -9,21 +9,28 @@
         <div class="card-header">
             <div class="row flex-between-end">
                 <div class="col-auto align-self-center">
-                    <a href="{{ route('admin.attributes.listAttr') }}" class="btn btn-dark">Back</a>
+                    <a href="{{ route('admin.attributes.list') }}" class="btn btn-dark">Back</a>
                 </div>
                 @if (session('error'))
                     <div class="col-auto align-self-center">
                         <h5 class="mb-0 text-danger">{{ session('error') }}</h5>
                     </div>
                 @else
-                    <div class="col-auto align-self-center">
-                        <h5 class="mb-0">Aategories Edit</h5>
-                    </div>
+                    @if (session('success'))
+                        <div class="col-auto align-self-center">
+                            <h5 class="mb-0 text-success">{{ session('success') }}</h5>
+                        </div>
+                    @else
+                        <div class="col-auto align-self-center">
+                            <h5 class="mb-0">Aategories Edit</h5>
+                        </div>
+                    @endif
                 @endif
             </div>
         </div>
         <div class="card-body p-0 pb-3">
-            <form class="table-responsive scrollbar" action="{{ route('admin.attributes.addOrCreate', $model->id) }}"
+            <form class="table-responsive scrollbar"
+                action="{{ route('admin.attributes.update', $attrName == 'Size Attribute' ? 'size' : 'color') }}"
                 method="POST">
                 @csrf
                 <table class="table mb-0">
@@ -31,58 +38,41 @@
                         <tr>
                             <th class="text-black dark__text-white align-middle" style="width: 300px;">Name</th>
                             <th class="text-black dark__text-white align-middle">Attribute Value</th>
-                            <th class="text-black dark__text-white align-middle" style="width: 250px;">
-                                <a class="btn btn-primary" id="btnMore" onclick="addMore()">More value</a>
-                            </th>
+                            <th class="text-black dark__text-white align-middle" style="width: 250px;"></th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td class="align-middle">
-                                <input type="text" class="form-control" name="name" value="{{ $model->name }}">
+                                {{ $attrName }}
                             </td>
                             <td>
                                 <div class="row" id="moreValue">
-                                    @foreach ($model->values as $value)
-                                        @if (preg_match('/^#([a-fA-F0-9]{3}|[a-fA-F0-9]{6})$/', $value->value) ||
-                                                preg_match('/^rgb\(\s*(\d{1,3}%?\s*,\s*){2}\d{1,3}%?\s*\)$/', $value->value) ||
-                                                preg_match('/^hsl\(\s*\d{1,3}\s*,\s*\d{1,3}%\s*,\s*\d{1,3}%\s*\)$/', $value->value))
-                                            <div class="col-sm-4 mb-3 d-flex" id="valueID-{{ $value->id }}">
-                                                <input type="color" class="form-control form-control-color inputColor"
-                                                    name="update[{{ $value->id }}]" value="{{ $value->value }}">
-                                            </div>
-                                        @else
-                                            <div class="col-sm-4 mb-3 d-flex" id="valueID-{{ $value->id }}">
-                                                <input type="text" class="form-control inputText"
-                                                    name="update[{{ $value->id }}]" value="{{ $value->value }}">
-                                            </div>
+                                    @if (count($dataAttr))
+                                        @if ($attrName == 'Color Attribute')
+                                            @foreach ($dataAttr as $value)
+                                                <div class="col-sm-4 mb-3 d-flex" id="valueID-{{ $value->id }}">
+                                                    <input type="color" class="form-control form-control-color inputColor"
+                                                        name="update[{{ $value->id }}]" value="{{ $value->colorValue }}">
+                                                </div>
+                                            @endforeach
                                         @endif
-                                    @endforeach
-                                    @php
-                                        $ids = old('ids', []);
-                                        $values = old('values', []);
-                                        $typeName = old('typeName', 'text');
-                                    @endphp
-                                    @foreach ($values as $index => $value)
-                                        @php
-                                            $id = $ids[$index] ?? $index;
-                                        @endphp
-                                        <div class="col-sm-4 mb-3 d-flex" id="{{ $id }}_item"
-                                            style="margin-top: 10px;">
-                                            <input type="hidden" name="ids[]" value="{{ $id }}">
-                                            <input type="hidden" name="typeName" value="{{ $typeName }}">
-                                            <input type="{{ $typeName }}" class="form-control{!! $typeName == 'color' ? ' form-control-color' : '' !!}"
-                                                name="values[]" value="{{ $value }}" id="{{ $id }}" />
-                                            <button type="button" class="btn btn-danger"
-                                                onclick="removeValue('{{ $id }}_item')">
-                                                <span class="far fa-trash-alt"></span>
-                                            </button>
-                                        </div>
-                                    @endforeach
+                                        @if ($attrName == 'Size Attribute')
+                                            @foreach ($dataAttr as $value)
+                                                <div class="col-sm-4 mb-3 d-flex" id="valueID-{{ $value->id }}">
+                                                    <input type="text" class="form-control inputText"
+                                                        name="update[{{ $value->id }}]"
+                                                        value="{{ $value->sizeValue }}">
+                                                </div>
+                                            @endforeach
+                                        @endif
+                                    @else
+                                        <div class="col-12 text-warning">Chưa thêm giá trị cho thuộc tính này!</div>
+                                    @endif
                                 </div>
                             </td>
                             <td class="align-middle">
-                                <a class="btn btn-info" id="btnChangeAttr" onclick="colorAttribute()">Change new input</a>
+                                <a class="btn btn-primary" id="btnMore" onclick="{!! $attrName == 'Size Attribute' ? 'addMore()' : 'addMoreColor()' !!}">More value</a>
                             </td>
                         </tr>
                     </tbody>
@@ -115,9 +105,6 @@
 @endsection
 @section('js-setting')
     <script>
-        var btnChangeAttr = document.getElementById('btnChangeAttr');
-        var btnChange = document.getElementById('btnMore');
-
         function addMore() {
             let id = 'gen' + '_' + Math.random().toString(36).substring(2, 15).toLowerCase();
             let html = `
@@ -146,29 +133,6 @@
 
         function removeValue(id) {
             $('#' + id).remove();
-        }
-
-        function colorAttribute() {
-            let inputs = document.querySelectorAll('input[name="values[]"]');
-            btnChangeAttr.setAttribute('onclick', 'ortherAttribute()');
-            btnChange.setAttribute('onclick', 'addMoreColor()');
-            inputs.forEach(input => {
-                input.value = null;
-                input.type = 'color';
-                input.classList.add("form-control-color");
-            });
-
-        }
-
-        function ortherAttribute() {
-            let inputs = document.querySelectorAll('input[name="values[]"]');
-            btnChangeAttr.setAttribute('onclick', 'colorAttribute()');
-            btnChange.setAttribute('onclick', 'addMore()');
-            inputs.forEach(input => {
-                input.type = 'text';
-                input.value = null;
-                input.classList.remove("form-control-color");
-            });
         }
     </script>
 @endsection

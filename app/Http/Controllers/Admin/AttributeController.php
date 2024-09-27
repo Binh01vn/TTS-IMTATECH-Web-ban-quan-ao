@@ -3,209 +3,129 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Attribute;
-use App\Models\AttributeValue;
+use App\Models\ColorAttribute;
+use App\Models\SizeAttribute;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 class AttributeController extends Controller
 {
-    public function listAttributes()
+    public function listAttribute()
     {
-        $data = Attribute::query()->with('values')->get();
-        return view('admin.contents.Attributes.index', compact('data'));
+        $color = ColorAttribute::query()->get();
+        $size = SizeAttribute::query()->get();
+        return view('admin.contents.Attributes.index', compact('color', 'size'));
     }
-
-    public function store(Request $request)
+    public function createAttrValues(Request $request)
     {
-        $validator = validator(
-            $request->all(),
-            [
-                'name' => [
-                    'required',
-                    'min:5',
-                    'max:50',
-                    Rule::unique('attributes', 'name'),
-                ],
-            ],
-            [
-                'name.required' => 'Tên thuộc tính bị bỏ trống!',
-                'name.unique' => "Tên thuộc tính '$request->name' đã tồn tại trong hệ thống!",
-                'name.min' => "Tên thuộc tính quá ngắn!",
-                'name.max' => "Tên thuộc tính quá dài!",
-            ]
-        );
-        if (!empty($request->values)) {
-            $dataValues = $request->values;
-            $hasEmptyValue = false;
-            foreach ($dataValues as $value) {
-                if (empty($value)) {
-                    $hasEmptyValue = true;
-                    break;
-                }
-            }
-            $validator->after(function ($validator) use ($request) {
-                $dataValues = $request->values;
-                foreach ($dataValues as $index => $value) {
-                    $exists = AttributeValue::query()->where('value', $value)->exists();
-                    if ($exists) {
-                        $validator->errors()->add("values.$index", "Giá trị thuộc tính '$value' đã tồn tại trong hệ thống.");
-                    }
-                }
-            });
+        $values = $request->values;
+        if (!empty(array_filter($values, fn($value) => empty ($value)))) {
+            return redirect()->back()->with(['error' => 'Một số giá trị thuộc tính trống, mời kiểm tra lại!']);
         }
+        $attributeType = $request->sltAttribute;
+        $tableMap = [
+            'color' => ['table' => 'color_attributes', 'column' => 'colorValue'],
+            'size' => ['table' => 'size_attributes', 'column' => 'sizeValue']
+        ];
+        if (!isset($tableMap[$attributeType])) {
+            return redirect()->back()->with(['error' => 'Loại thuộc tính không hợp lệ!']);
+        }
+        $rules = [];
+        foreach ($values as $key => $value) {
+            $rules["values.$key"] = [
+                Rule::unique($tableMap[$attributeType]['table'], $tableMap[$attributeType]['column'])
+            ];
+        }
+        $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-        if (isset($hasEmptyValue) && $hasEmptyValue == true) {
-            return redirect()->back()->withInput()->withErrors(['error' => 'Một số giá trị thuộc tính trống, mời kiểm tra lại!']);
+            return redirect()->back()->withErrors($validator);
         }
         try {
             DB::beginTransaction();
-
-            $attributeData = Attribute::query()->create([
-                'name' => $request->name
-            ]);
-            if (isset($request->values)) {
-                foreach ($request->values as $values) {
-                    AttributeValue::query()->create([
-                        'attribute_id' => $attributeData->id,
-                        'value' => $values
-                    ]);
-                }
+            foreach ($values as $value) {
+                DB::table($tableMap[$attributeType]['table'])->insert([$tableMap[$attributeType]['column'] => $value]);
             }
             DB::commit();
-            return redirect()->route('admin.attributes.listAttr')->with('success', 'Thêm thuộc tính thành công!');
+            return redirect()->back()->with(['success' => 'Thêm mới thuộc tính thành công!']);
         } catch (\Exception $exception) {
             DB::rollBack();
-            return redirect()->back()->with('error', $exception->getMessage());
+            return redirect()->back()->with(['error' => 'Có lỗi trong quá trình thực hiện!']);
         }
     }
-    public function destroy(string $id)
-    {
-        $model = Attribute::query()->findOrFail($id);
-        $model->delete();
-        $model->values()->delete();
-        return redirect()->back()->with('success', 'Xóa thuộc tính thành công!');
-    }
-    public function edit(string $id)
-    {
-        $model = Attribute::query()->with('values')->findOrFail($id);
-        return view('admin.contents.Attributes.edit', compact('model'));
-    }
 
-    public function delete(string $id)
+    public function delValueC(string $id)
     {
-        $value = AttributeValue::query()->findOrFail($id);
-        if ($value->delete()) {
+        $valueC = ColorAttribute::query()->findOrFail($id);
+        if ($valueC->delete()) {
             return response()->json(['success' => 'Xóa giá trị thuộc tính thành công!']);
         } else {
             return response()->json(['error' => 'Không thể kết nối đến server!'], 500);
         }
     }
-
-    public function addOrCreate(Request $request, string $id)
+    public function delValueS(string $id)
     {
-        $attributeData = Attribute::query()->findOrFail($id);
-        $validator = validator(
-            $request->all(),
-            [
-                'name' => [
-                    'required',
-                    'min:5',
-                    'max:50',
-                    Rule::unique('attributes', 'name')->ignore($attributeData->id),
-                ],
-            ],
-            [
-                'name.required' => 'Tên thuộc tính bị bỏ trống!',
-                'name.unique' => "Tên thuộc tính '$request->name' đã tồn tại trong hệ thống!",
-                'name.min' => "Tên thuộc tính quá ngắn!",
-                'name.max' => "Tên thuộc tính quá dài!",
-            ]
-        );
-        if (isset($request->update)) {
-            $dataUpdate = $request->update;
-            $hasEmptyUpdate = false;
-            foreach ($dataUpdate as $update) {
-                if (empty($update)) {
-                    $hasEmptyUpdate = true;
-                    break;
-                }
+        $valueS = SizeAttribute::query()->findOrFail($id);
+        if ($valueS->delete()) {
+            return response()->json(['success' => 'Xóa giá trị thuộc tính thành công!']);
+        } else {
+            return response()->json(['error' => 'Không thể kết nối đến server!'], 500);
+        }
+    }
+    public function showFormEdit(string $attr)
+    {
+        if ($attr == 'color') {
+            $dataAttr = ColorAttribute::query()->get();
+            $attrName = 'Color Attribute';
+        } elseif ($attr == 'size') {
+            $dataAttr = SizeAttribute::query()->get();
+            $attrName = 'Size Attribute';
+        }
+        return view('admin.contents.Attributes.edit', compact('dataAttr', 'attrName'));
+    }
+    public function update(Request $request, string $attr)
+    {
+        $dataUpdate = $request->update;
+        $dataValues = $request->values;
+        $hasEmpty = fn($arr) => !empty (array_filter($arr, fn($val) => empty ($val)));
+        if ($hasEmpty($dataUpdate) || ($dataValues && $hasEmpty($dataValues))) {
+            return redirect()->back()->withErrors(['error' => 'Một số giá trị thuộc tính trống!']);
+        }
+        $tableMap = [
+            'color' => ['table' => 'color_attributes', 'column' => 'colorValue'],
+            'size' => ['table' => 'size_attributes', 'column' => 'sizeValue']
+        ];
+        if (!isset($tableMap[$attr])) {
+            return redirect()->back()->with(['error' => 'Loại thuộc tính không hợp lệ!']);
+        }
+        if (count($dataUpdate) !== count(array_unique($dataUpdate))) {
+            return redirect()->back()->withErrors(['error' => 'Có giá trị thuộc tính bị trùng lặp!']);
+        }
+        if ($dataValues) {
+            $rules = [];
+            foreach ($dataValues as $key => $value) {
+                $rules["values.$key"] = [Rule::unique($tableMap[$attr]['table'], $tableMap[$attr]['column'])];
             }
-        }
-        if (empty($request->values)) {
-            $validator->after(function ($validator) use ($request) {
-                $updates = $request->input('update', []);
-
-                foreach ($updates as $attributeValueId => $value) {
-                    $existingValue = AttributeValue::query()->where('value', $value)
-                        ->where('id', '!=', $attributeValueId)
-                        ->first();
-
-                    if ($existingValue) {
-                        $validator->errors()->add("update.$attributeValueId", "Giá trị thuộc tính '$value' đã tồn tại trong hệ thống.");
-                    }
-                }
-            });
-        }
-        if (!empty($request->values)) {
-            $dataValues = $request->values;
-            $hasEmptyValue = false;
-            foreach ($dataValues as $value) {
-                if (empty($value)) {
-                    $hasEmptyValue = true;
-                    break;
-                }
+            $validator = Validator::make($request->all(), $rules);
+            if ($validator->fails()) {
+                return redirect()->back()->withErrors($validator);
             }
-            $validator->after(function ($validator) use ($request) {
-                if (isset($request->update)) {
-                    $updates = $request->update;
-                    foreach ($updates as $attributeValueId => $value) {
-                        $existingValue = AttributeValue::query()->where('value', $value)
-                            ->where('id', '!=', $attributeValueId)
-                            ->first();
-
-                        if ($existingValue) {
-                            $validator->errors()->add("update.$attributeValueId", "Giá trị thuộc tính '$value' đã tồn tại trong hệ thống.");
-                        }
-                    }
-                }
-                $dataValues = $request->values;
-                foreach ($dataValues as $index => $value) {
-                    $exists = AttributeValue::query()->where('value', $value)->exists();
-                    if ($exists) {
-                        $validator->errors()->add("update.$index", "Giá trị thuộc tính '$value' đã tồn tại trong hệ thống.");
-                    }
-                }
-            });
-        }
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-        if ((isset($hasEmptyValue) && $hasEmptyValue == true) || (isset($hasEmptyUpdate) && $hasEmptyUpdate == true)) {
-            return redirect()->back()->withInput()->withErrors(['error' => 'Một số giá trị thuộc tính trống, mời kiểm tra lại!']);
         }
         try {
-            DB::beginTransaction();
-            $attributeData->update(['name' => $request->name]);
-            if (isset($request->update)) {
-                foreach ($request->update as $valueID => $value) {
-                    $valueData = AttributeValue::query()->findOrFail($valueID);
-                    $valueData->update(['value' => $value]);
+            DB::transaction(function () use ($dataUpdate, $dataValues, $tableMap, $attr) {
+                foreach ($dataUpdate as $key => $value) {
+                    DB::table($tableMap[$attr]['table'])->where('id', $key)->update([$tableMap[$attr]['column'] => $value]);
                 }
-            }
-            if (isset($request->values)) {
-                foreach ($request->values as $key => $value) {
-                    AttributeValue::query()->create(['attribute_id' => $attributeData->id, 'value' => $value]);
+                if ($dataValues) {
+                    foreach ($dataValues as $value) {
+                        DB::table($tableMap[$attr]['table'])->insert([$tableMap[$attr]['column'] => $value]);
+                    }
                 }
-            }
-            DB::commit();
-            return redirect()->route('admin.attributes.listAttr')->with(['success' => 'Cập nhật thuộc tính thành công!']);
+            });
+            return redirect()->route('admin.attributes.list')->with(['success' => 'Cập nhật thuộc tính thành công!']);
         } catch (\Exception $exception) {
-            DB::rollBack();
-            return redirect()->back()->with('error', $exception->getMessage());
+            return redirect()->back()->with(['error' => 'Có lỗi trong quá trình thực hiện!']);
         }
     }
 }

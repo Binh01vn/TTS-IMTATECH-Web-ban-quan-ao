@@ -102,7 +102,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('admin.attributes.listAttr') }}">
+                            <a class="nav-link" href="{{ route('admin.attributes.list') }}">
                                 <div class="d-flex align-items-center">
                                     <span class="nav-link-text ps-1">Attributes</span>
                                 </div>
@@ -124,57 +124,34 @@
                             </a><!-- more inner pages-->
                             <ul class="nav collapse" id="product">
                                 <li class="nav-item">
-                                    <a class="nav-link" href="app/e-commerce/product/product-list.html">
+                                    <a class="nav-link" href="{{ route('admin.products.list') }}">
                                         <div class="d-flex align-items-center">
                                             <span class="nav-link-text ps-1">Product list</span>
                                         </div>
                                     </a>
-                                    <!-- more inner pages-->
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="app/e-commerce/product/product-grid.html">
-                                        <div class="d-flex align-items-center">
-                                            <span class="nav-link-text ps-1">Product grid</span>
-                                        </div>
-                                    </a>
-                                    <!-- more inner pages-->
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" href="app/e-commerce/product/product-details.html">
                                         <div class="d-flex align-items-center">
-                                            <span class="nav-link-text ps-1">Product details</span>
+                                            <span class="nav-link-text ps-1">Product unactive</span>
                                         </div>
                                     </a>
-                                    <!-- more inner pages-->
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{{route('admin.products.createPrd')}}">
+                                    <a class="nav-link" href="{{ route('admin.products.createPrd') }}">
                                         <div class="d-flex align-items-center">
-                                            <span class="nav-link-text ps-1">Add
-                                                product</span>
+                                            <span class="nav-link-text ps-1">Add product</span>
                                         </div>
                                     </a>
-                                    <!-- more inner pages-->
                                 </li>
                             </ul>
                         </li>
-                        <li class="nav-item"><a class="nav-link dropdown-indicator" href="#orders"
-                                data-bs-toggle="collapse" aria-expanded="false" aria-controls="e-commerce">
-                                <div class="d-flex align-items-center"><span class="nav-link-text ps-1">Orders</span>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('admin.orders.list') }}">
+                                <div class="d-flex align-items-center">
+                                    <span class="nav-link-text ps-1">Orders</span>
                                 </div>
-                            </a><!-- more inner pages-->
-                            <ul class="nav collapse" id="orders">
-                                <li class="nav-item"><a class="nav-link"
-                                        href="app/e-commerce/orders/order-list.html">
-                                        <div class="d-flex align-items-center"><span class="nav-link-text ps-1">Order
-                                                list</span></div>
-                                    </a><!-- more inner pages--></li>
-                                <li class="nav-item"><a class="nav-link"
-                                        href="app/e-commerce/orders/order-details.html">
-                                        <div class="d-flex align-items-center"><span class="nav-link-text ps-1">Order
-                                                details</span></div>
-                                    </a><!-- more inner pages--></li>
-                            </ul>
+                            </a>
                         </li>
                         <li class="nav-item"><a class="nav-link" href="app/e-commerce/customers.html">
                                 <div class="d-flex align-items-center"><span
@@ -863,8 +840,7 @@
                             </a><!-- more inner pages--></li>
                         <li class="nav-item"><a class="nav-link" href="modules/components/bottom-bar.html">
                                 <div class="d-flex align-items-center"><span class="nav-link-text ps-1">Bottom
-                                        bar</span><span
-                                        class="badge rounded-pill ms-2 badge-subtle-success">New</span>
+                                        bar</span><span class="badge rounded-pill ms-2 badge-subtle-success">New</span>
                                 </div>
                             </a><!-- more inner pages--></li>
                         <li class="nav-item"><a class="nav-link" href="modules/components/breadcrumbs.html">

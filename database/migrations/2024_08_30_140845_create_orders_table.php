@@ -29,6 +29,7 @@ return new class extends Migration {
             $table->string('status_order')->default(Order::STATUS_ORDER['pending']);
             $table->string('payment')->default(Order::STATUS_PAYMENT['unpaid']);
             $table->double('total_price', 15, 2);
+            $table->dateTime('date_create_order');
             $table->timestamps();
         });
     }
