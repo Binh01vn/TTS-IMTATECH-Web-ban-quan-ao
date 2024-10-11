@@ -11,4 +11,7 @@ class ColorAttribute extends Model
     protected $fillable = [
         'colorValue',
     ];
+    public function variantValues(){
+        return $this->hasMany(VariantValue::class, 'color_attribute_id');
+    }
 }

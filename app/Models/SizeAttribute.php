@@ -11,4 +11,7 @@ class SizeAttribute extends Model
     protected $fillable = [
         'sizeValue',
     ];
+    public function variantValues(){
+        return $this->hasMany(VariantValue::class, 'size_attribute_id');
+    }
 }

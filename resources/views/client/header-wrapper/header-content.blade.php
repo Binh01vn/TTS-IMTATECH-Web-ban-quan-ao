@@ -46,7 +46,7 @@
                                         <span class='alert-count'>{{ count(session('cart')) }}</span>
                                         <i class='bx bx-shopping-bag'></i>
                                     </a>
-                                    <div class="dropdown-menu dropdown-menu-end">
+                                    <div class="dropdown-menu dropdown-menu-end" style="width: 450px;">
                                         <a href="javascript:;">
                                             <div class="cart-header">
                                                 <p class='cart-header-title mb-0'>{{ count(session('cart')) }} ITEMS</p>
@@ -113,11 +113,17 @@
                                                 <p class="cart-header-clear ms-auto mb-0">VIEW CART</p>
                                             </div>
                                         </a>
-                                        <a href="javascript:;">
-                                            <div class="text-center cart-footer align-items-center">
-                                                <h5 class="mb-0">There are no products in the cart.</h5>
-                                            </div>
-                                        </a>
+                                        <div class="cart-list">
+                                            <a class="dropdown-item" href="javascript:;">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="flex-grow-1">
+                                                        <h6 class="cart-product-title">
+                                                            There are no products in the cart.
+                                                        </h6>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </div>
                                         <div class="d-grid p-3 border-top">
                                             <a href="javascript:;" class="btn btn-dark btn-ecomm">SHOP NOW</a>
                                         </div>

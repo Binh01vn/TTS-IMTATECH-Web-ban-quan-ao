@@ -2,7 +2,48 @@
 @section('title')
     Product Detail
 @endsection
+@section('css-setting')
+    <style>
+        .star-rating {
+            direction: rtl;
+            /* Đảo ngược thứ tự hiển thị sao */
+            font-size: 15px;
+            /* Tăng kích thước của các ngôi sao */
+            unicode-bidi: bidi-override;
+            /* Đảm bảo sự hiển thị sao chính xác */
+            display: inline-block;
+        }
 
+        .star-rating input[type="radio"] {
+            display: none;
+            /* Ẩn các radio input */
+        }
+
+        .star-rating label {
+            color: lightgray;
+            /* Màu xám mặc định cho ngôi sao */
+            cursor: pointer;
+            font-size: 2em;
+        }
+
+        .star-rating input[type="radio"]:checked~label {
+            color: gold;
+            /* Màu vàng khi được chọn */
+        }
+
+        .star-rating label:hover,
+        .star-rating label:hover~label {
+            color: gold;
+            /* Màu vàng khi hover */
+        }
+
+        /* Đảm bảo các sao trước đó cũng chuyển màu vàng khi người dùng hover */
+        .star-rating input[type="radio"]:checked~label:hover,
+        .star-rating input[type="radio"]:checked~label:hover~label {
+            color: gold;
+        }
+    </style>
+@endsection
 @section('contents')
     <!--start page wrapper -->
     <div class="page-wrapper">
@@ -11,7 +52,11 @@
             <section class="py-3 border-bottom border-top d-none d-md-flex bg-light">
                 <div class="container">
                     <div class="page-breadcrumb d-flex align-items-center">
-                        <h3 class="breadcrumb-title pe-3">{{ $dataPrd->name }}</h3>
+                        @if (session()->has('success'))
+                            <h3 class="breadcrumb-title pe-3 text-success">{{ session('success') }}</h3>
+                        @else
+                            <h3 class="breadcrumb-title pe-3">{{ $dataPrd->name }}</h3>
+                        @endif
                         <div class="ms-auto">
                             <nav aria-label="breadcrumb">
                                 <ol class="breadcrumb mb-0 p-0">
@@ -71,18 +116,24 @@
                                         @csrf
                                         <input type="hidden" name="slug" value="{{ $dataPrd->slug }}">
                                         <h3 class="mt-3 mt-lg-0 mb-0">{{ $dataPrd->name }}</h3>
-                                        <div class="product-rating d-flex align-items-center mt-2">
-                                            <div class="rates cursor-pointer font-13"> <i
-                                                    class="bx bxs-star text-warning"></i>
-                                                <i class="bx bxs-star text-warning"></i>
-                                                <i class="bx bxs-star text-warning"></i>
-                                                <i class="bx bxs-star text-warning"></i>
-                                                <i class="bx bxs-star text-light-4"></i>
+                                        @if ($totalReviews > 0)
+                                            <div class="product-rating d-flex align-items-center mt-2">
+                                                <div class="rates cursor-pointer font-13">
+                                                    @for ($i = 0; $i < $averageRating; $i++)
+                                                        <i class="bx bxs-star text-warning"></i>
+                                                    @endfor
+                                                </div>
+                                                <div class="ms-1">
+                                                    <p class="mb-0">({{ $totalReviews }} Ratings)</p>
+                                                </div>
                                             </div>
-                                            <div class="ms-1">
-                                                <p class="mb-0">(24 Ratings)</p>
+                                        @else
+                                            <div class="product-rating d-flex align-items-center mt-2">
+                                                <div class="ms-1">
+                                                    <p class="mb-0">Chưa có đánh giá chi tiết cho sản phẩm!</p>
+                                                </div>
                                             </div>
-                                        </div>
+                                        @endif
                                         <div class="d-flex align-items-center mt-3 gap-2">
                                             <h4 class="mb-0">
                                                 {{ number_format((int) ($dataPrd->sale_percent > 0 ? $dataPrd->price_default * (1 - $dataPrd->sale_percent / 100) : ($dataPrd->price_sale > 0 ? $dataPrd->price_sale : $dataPrd->price_default)), 0, ',', '.') }}
@@ -99,35 +150,37 @@
                                                 {!! $dataPrd->quantity > 0 ? "Số lượng tồn kho: $dataPrd->quantity" : 'Sản phẩm có sẵn' !!}
                                             </h6>
                                         </div>
-                                        {{-- <dl class="row mt-3">
-                                            <dt class="col-sm-3">Product SKU</dt>
-                                            <dd class="col-sm-9">{{ $dataPrd->sku }}</dd>
-                                        </dl> --}}
                                         <div class="row row-cols-auto align-items-center mt-3">
                                             <div class="col">
                                                 <label class="form-label">Quantity:</label>
                                                 <input class="form-control form-input-sm" type="number" min="0"
                                                     value="1" max="{{ $dataPrd->quantity }}" name="quantity">
                                             </div>
-                                            {{-- <div class="col">
-                                                <label class="form-label">Size</label>
-                                                <select class="form-select form-select-sm">
-                                                    <option>S</option>
-                                                    <option>M</option>
-                                                    <option>L</option>
-                                                    <option>XS</option>
-                                                    <option>XL</option>
-                                                </select>
-                                            </div>
-                                            <div class="col">
-                                                <label class="form-label">Colors</label>
-                                                <div class="color-indigators d-flex align-items-center gap-2">
-                                                    <div class="color-indigator-item bg-primary"></div>
-                                                    <div class="color-indigator-item bg-danger"></div>
-                                                    <div class="color-indigator-item bg-success"></div>
-                                                    <div class="color-indigator-item bg-warning"></div>
+                                            @if (count($dataPrd->variants) > 0)
+                                                <div class="col">
+                                                    <label class="form-label">Size</label>
+                                                    <select class="form-select form-select-sm" name="prd_size">
+                                                        @foreach ($sizes as $size)
+                                                            <option value="{{ $size->id }}">
+                                                                {{ $size->sizeValue }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
                                                 </div>
-                                            </div> --}}
+                                                <div class="col">
+                                                    <label class="form-label">Colors</label>
+                                                    <div class="color-indigators d-flex align-items-center gap-2">
+                                                        @foreach ($colors as $color)
+                                                            <input type="radio" name="color"
+                                                                id="color-{{ $color->id }}" value="{{ $color->id }}"
+                                                                hidden>
+                                                            <label for="color-{{ $color->id }}"
+                                                                class="color-indigator-item"
+                                                                style="background-color: {{ $color->colorValue }};"></label>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                            @endif
                                         </div>
                                         <!--end row-->
                                         <div class="gap-2 mt-3">
@@ -208,7 +261,12 @@
                             <li class="nav-item">
                                 <a class="nav-link active" data-bs-toggle="tab" href="#reviews">
                                     <div class="d-flex align-items-center">
-                                        <div class="tab-title text-uppercase fw-500">(3) Reviews</div>
+                                        @if ($totalReviews > 0)
+                                            <div class="tab-title text-uppercase fw-500">({{ $totalReviews }}) Reviews
+                                            </div>
+                                        @else
+                                            <div class="tab-title text-uppercase fw-500">Reviews</div>
+                                        @endif
                                     </div>
                                 </a>
                             </li>
@@ -232,119 +290,72 @@
                                 <div class="row">
                                     <div class="col col-lg-8">
                                         <div class="product-review">
-                                            <h5 class="mb-4">3 Reviews For The Product</h5>
-                                            <div class="review-list">
-                                                <div class="d-flex align-items-start">
-                                                    <div class="review-user">
-                                                        <img src="assets/images/avatars/avatar-1.png" width="65"
-                                                            height="65" class="rounded-circle" alt="" />
-                                                    </div>
-                                                    <div class="review-content ms-3">
-                                                        <div class="rates cursor-pointer fs-6">
-                                                            <i class="bx bxs-star text-warning"></i>
-                                                            <i class="bx bxs-star text-warning"></i>
-                                                            <i class="bx bxs-star text-warning"></i>
-                                                            <i class="bx bxs-star text-warning"></i>
-                                                            <i class="bx bxs-star text-warning"></i>
+                                            @if ($totalReviews > 0)
+                                                <h5 class="mb-4">{{ $totalReviews }} Reviews For The Product</h5>
+                                            @else
+                                                <h5 class="mb-4">Reviews For The Product</h5>
+                                            @endif
+                                            @if (count($dataPrd->reviews) > 0)
+                                                @foreach ($dataPrd->reviews as $review)
+                                                    <div class="review-list">
+                                                        <div class="d-flex align-items-start">
+                                                            <div class="review-content ms-3">
+                                                                <div class="rates cursor-pointer fs-6">
+                                                                    @for ($i = 0; $i < $review->rating; $i++)
+                                                                        <i class="bx bxs-star text-warning"></i>
+                                                                    @endfor
+                                                                </div>
+                                                                <div class="d-flex align-items-center mb-2">
+                                                                    <h6 class="mb-0">{{ $review->user_name }}</h6>
+                                                                    <p class="mb-0 ms-auto">{{ $review->review_date }}</p>
+                                                                </div>
+                                                                <p>{{ $review->comment }}</p>
+                                                            </div>
                                                         </div>
-                                                        <div class="d-flex align-items-center mb-2">
-                                                            <h6 class="mb-0">James Caviness</h6>
-                                                            <p class="mb-0 ms-auto">February 16, 2021</p>
-                                                        </div>
-                                                        <p>Nesciunt tofu stumptown aliqua, retro synth master cleanse.
-                                                            Mustache cliche tempor, williamsburg carles vegan helvetica.
-                                                            Reprehenderit butcher retro keffiyeh dreamcatcher synth. Cosby
-                                                            sweater eu banh mi, qui irure terry richardson ex squid. Aliquip
-                                                            placeat salvia cillum iphone. Seitan aliquip quis cardigan</p>
+                                                        <hr />
                                                     </div>
-                                                </div>
-                                                <hr />
-                                                <div class="d-flex align-items-start">
-                                                    <div class="review-user">
-                                                        <img src="assets/images/avatars/avatar-2.png" width="65"
-                                                            height="65" class="rounded-circle" alt="" />
-                                                    </div>
-                                                    <div class="review-content ms-3">
-                                                        <div class="rates cursor-pointer fs-6">
-                                                            <i class="bx bxs-star text-warning"></i>
-                                                            <i class="bx bxs-star text-warning"></i>
-                                                            <i class="bx bxs-star text-warning"></i>
-                                                            <i class="bx bxs-star text-warning"></i>
-                                                            <i class="bx bxs-star text-warning"></i>
-                                                        </div>
-                                                        <div class="d-flex align-items-center mb-2">
-                                                            <h6 class="mb-0">David Buckley</h6>
-                                                            <p class="mb-0 ms-auto">February 22, 2021</p>
-                                                        </div>
-                                                        <p>Nesciunt tofu stumptown aliqua, retro synth master cleanse.
-                                                            Mustache cliche tempor, williamsburg carles vegan helvetica.
-                                                            Reprehenderit butcher retro keffiyeh dreamcatcher synth. Cosby
-                                                            sweater eu banh mi, qui irure terry richardson ex squid. Aliquip
-                                                            placeat salvia cillum iphone. Seitan aliquip quis cardigan</p>
-                                                    </div>
-                                                </div>
-                                                <hr />
-                                                <div class="d-flex align-items-start">
-                                                    <div class="review-user">
-                                                        <img src="assets/images/avatars/avatar-3.png" width="65"
-                                                            height="65" class="rounded-circle" alt="" />
-                                                    </div>
-                                                    <div class="review-content ms-3">
-                                                        <div class="rates cursor-pointer fs-6">
-                                                            <i class="bx bxs-star text-warning"></i>
-                                                            <i class="bx bxs-star text-warning"></i>
-                                                            <i class="bx bxs-star text-warning"></i>
-                                                            <i class="bx bxs-star text-warning"></i>
-                                                            <i class="bx bxs-star text-warning"></i>
-                                                        </div>
-                                                        <div class="d-flex align-items-center mb-2">
-                                                            <h6 class="mb-0">Peter Costanzo</h6>
-                                                            <p class="mb-0 ms-auto">February 26, 2021</p>
-                                                        </div>
-                                                        <p>Nesciunt tofu stumptown aliqua, retro synth master cleanse.
-                                                            Mustache cliche tempor, williamsburg carles vegan helvetica.
-                                                            Reprehenderit butcher retro keffiyeh dreamcatcher synth. Cosby
-                                                            sweater eu banh mi, qui irure terry richardson ex squid. Aliquip
-                                                            placeat salvia cillum iphone. Seitan aliquip quis cardigan</p>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                                @endforeach
+                                            @endif
                                         </div>
                                     </div>
-                                    <div class="col col-lg-4">
+                                    <form action="{{ route('shop.reviews') }}" class="col col-lg-4" method="POST">
+                                        @csrf
+                                        <input type="hidden" name="product_id" value="{{ $dataPrd->id }}">
                                         <div class="add-review border">
                                             <div class="form-body p-3">
                                                 <h4 class="mb-4">Write a Review</h4>
                                                 <div class="mb-3">
-                                                    <label class="form-label">Your Name</label>
-                                                    <input type="text" class="form-control rounded-0">
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Your Email</label>
-                                                    <input type="text" class="form-control rounded-0">
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Rating</label>
-                                                    <select class="form-select rounded-0">
-                                                        <option selected>Choose Rating</option>
-                                                        <option value="1">1</option>
-                                                        <option value="2">2</option>
-                                                        <option value="3">3</option>
-                                                        <option value="3">4</option>
-                                                        <option value="3">5</option>
-                                                    </select>
+                                                    <label class="form-label">Rating</label> <br>
+                                                    <div class="star-rating">
+                                                        <input type="radio" id="5-stars" name="rating"
+                                                            value="5" />
+                                                        <label for="5-stars" class="star">&#9733;</label>
+                                                        <input type="radio" id="4-stars" name="rating"
+                                                            value="4" />
+                                                        <label for="4-stars" class="star">&#9733;</label>
+                                                        <input type="radio" id="3-stars" name="rating"
+                                                            value="3" />
+                                                        <label for="3-stars" class="star">&#9733;</label>
+                                                        <input type="radio" id="2-stars" name="rating"
+                                                            value="2" />
+                                                        <label for="2-stars" class="star">&#9733;</label>
+                                                        <input type="radio" id="1-star" name="rating"
+                                                            value="1" />
+                                                        <label for="1-star" class="star">&#9733;</label>
+                                                    </div>
                                                 </div>
                                                 <div class="mb-3">
                                                     <label class="form-label">Example textarea</label>
-                                                    <textarea class="form-control rounded-0" rows="3"></textarea>
+                                                    <textarea class="form-control rounded-0" rows="3" name="comment"></textarea>
                                                 </div>
                                                 <div class="d-grid">
-                                                    <button type="button" class="btn btn-dark btn-ecomm">Submit a
-                                                        Review</button>
+                                                    <button type="submit" class="btn btn-dark btn-ecomm">
+                                                        Submit a Review
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    </form>
                                 </div>
                                 <!--end row-->
                             </div>

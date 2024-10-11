@@ -25,6 +25,7 @@ class ProductController extends Controller
     }
     public function create()
     {
+        session()->forget('product');
         $categoryParent = Category::query()->with('children')->whereNull('parent_id')->get();
         $dataTags = Tag::query()->get();
         $colorAttr = ColorAttribute::query()->get();
@@ -36,59 +37,85 @@ class ProductController extends Controller
     }
     public function store(Request $request)
     {
-        // dd($request->all());
         $productN = [];
         $productN['name'] = $request->name;
         $productN['slug'] = Str::slug($productN['name']);
         $productN['sku'] = $this->generateSKU($productN['slug']);
-        $productN['image_thumbnail'] = $request->image_thumbnail ??= null;
         $productN['product_galleries'] = $request->product_galleries;
-        $productN['price_default'] = $request->price_default ??= 0;
-        $productN['price_sale'] = $request->price_sale ??= 0;
+        if ($productN['product_galleries'] != null) {
+            $fileNames = [];
+            foreach ($productN['product_galleries'] as $file) {
+                $fileNames[] = $file->getClientOriginalName();
+            }
+            if (count($fileNames) !== count(array_unique($fileNames))) {
+                return redirect()->back()->with(['product_galleries' => 'Các tệp trong thư viện sản phẩm phải là duy nhất.'])->withInput();
+            }
+        }
+        $productN['price_default'] = $request->price_default;
+        $productN['price_sale'] = $request->price_sale;
+        $productN['sale_percent'] = $request->sale_percent;
+        $productN['start_date'] = $request->start_date;
+        $productN['end_date'] = $request->end_date;
+        $productN['quantity'] = $request->quantity ??= 0;
         $validator = validator(
             $productN,
             [
                 'name' => 'required|max:255|min:5',
                 'slug' => 'unique:products,slug',
-                'image_thumbnail' => 'image|mimes:jpeg,png,jpg,gif,svg,webp|max:5120',
                 'product_galleries.*' => 'image|mimes:jpeg,png,jpg,gif,svg,webp|max:5120',
                 'price_default' => 'required|numeric|min:0',
                 'price_sale' => 'nullable|numeric|min:0|lt:price_default',
+                'sale_percent' => 'nullable|numeric|max:99|min:0',
+                'quantity' => 'nullable|numeric|min:0',
             ]
         );
+        $validator->after(function ($validator) use ($request, $productN) {
+            if ($request->hasFile('image_thumbnail')) {
+                $imageThumbnail = $request->file('image_thumbnail');
+                $mimeTypes = ['jpeg', 'png', 'jpg', 'gif', 'svg', 'webp'];
+                if (!in_array($imageThumbnail->getClientOriginalExtension(), $mimeTypes)) {
+                    $validator->errors()->add('image_thumbnail', 'File upload phải là file ảnh và có các định dạng: jpeg, png, jpg, gif, svg, webp!');
+                }
+                if ($imageThumbnail->getSize() > 5120 * 1024) {
+                    $validator->errors()->add('image_thumbnail', 'File ảnh không được vượt quá 5MB!');
+                }
+            } else {
+                $validator->errors()->add('image_thumbnail', 'Image thumbnail không thể để trống!');
+            }
+            if ($productN['start_date'] && $productN['end_date']) {
+                $start = Carbon::parse($productN['start_date']);
+                $end = Carbon::parse($productN['end_date']);
+                if ($start->gt($end)) {
+                    $validator->errors()->add('date', 'Ngày bắt đầu không được lớn hơn ngày kết thúc!');
+                }
+            }
+        });
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
-        $productN['sale_percent'] = $request->sale_percent ??= 0;
-        if ($productN['price_sale'] >= 100) {
-            return redirect()->back()->with(['error' => 'Giá cả nhập không hợp lý!.']);
-        }
-        $productN['start_date'] = $request->start_date ??= null;
-        $productN['end_date'] = $request->end_date ??= null;
-        if ($productN['start_date'] && $productN['end_date']) {
-            $start = Carbon::parse($productN['start_date']);
-            $end = Carbon::parse($productN['end_date']);
-            if ($start->gt($end)) {
-                return redirect()->back()->with(['error' => 'Ngày bắt đầu không được lớn hơn ngày kết thúc.']);
-            }
-        }
         $productN['is_active'] = $request->is_active ??= 0;
-        $productN['quantity'] = $request->quantity ??= 0;
         $productN['description'] = $request->description ??= 'Chưa cập nhật mô tả cho sản phẩm!';
         $productN['material'] = $request->material ??= 'Thông tin chất liệu sản phẩm chưa được cập nhật!';
         $productN['user_manual'] = $request->user_manual ??= 'Chưa cập nhật hướng dẫn sử dụng cho sản phẩm!';
         $productN['category_id'] = $request->category_id ??= null;
         $productN['tags'] = $request->tags ??= null;
         $productV = $request->prdV;
-        foreach ($productV as $idC => $value) {
-            foreach ($value as $idS => $item) {
-                $startDate = $item["'start_date'"] ??= null;
-                $endDate = $item["'end_date'"] ??= null;
-                if ($startDate && $endDate) {
-                    $startDate = Carbon::parse($startDate);
-                    $endDate = Carbon::parse($endDate);
-                    if ($startDate->gt($endDate)) {
-                        return redirect()->back()->with(['error' => 'Ngày bắt đầu không được lớn hơn ngày kết thúc.']);
+        if ($productV) {
+            foreach ($productV as $idC => $value) {
+                foreach ($value as $idS => $item) {
+                    $startDate = $item["'start_date'"] ??= null;
+                    $endDate = $item["'end_date'"] ??= null;
+                    if ($startDate && $endDate) {
+                        $startDate = Carbon::parse($startDate);
+                        $endDate = Carbon::parse($endDate);
+                        if ($startDate->gt($endDate)) {
+                            return redirect()->back()->with(['error' => 'Ngày bắt đầu không được lớn hơn ngày kết thúc.'])->withInput();
+                        }
+                    }
+                    $priceD = $item["'price_default'"] ??= null;
+                    $priceS = $item["'price_sale'"] ??= null;
+                    if ($priceD && $priceS && $priceS > $priceD) {
+                        return redirect()->back()->with(['error' => 'Giá khuyến mại không được lớn hơn giá gốc.'])->withInput();
                     }
                 }
             }
@@ -97,8 +124,8 @@ class ProductController extends Controller
             DB::beginTransaction();
             /** @var Product $product */
             $slugCtr = Category::query()->where('id', $productN['category_id'])->first();
-            if ($productN['image_thumbnail'] != null) {
-                $productN['image_thumbnail'] = Storage::put("Products/ImgThumbnail/$slugCtr->slug", $productN['image_thumbnail']);
+            if ($request->hasFile('image_thumbnail')) {
+                $productN['image_thumbnail'] = Storage::put("Products/ImgThumbnail/$slugCtr->slug", $request->file('image_thumbnail'));
             }
             $product = Product::query()->create($productN);
             if ($productN['product_galleries'] != null) {
@@ -117,16 +144,23 @@ class ProductController extends Controller
             if ($productV) {
                 foreach ($productV as $idColor => $v) {
                     foreach ($v as $idSize => $itemV) {
-                        $prdVariants['product_id'] = $product->id;
-                        $prdVariants['color_attribute_id'] = $idColor;
-                        $prdVariants['size_attribute_id'] = $idSize;
-                        $prdVariants['sku'] = $this->generateSKU($product->slug);
-                        $prdVariants['price_dafault'] = $itemV["'price_dafault'"] ??= null;
-                        $prdVariants['price_sale'] = $itemV["'price_sale'"] ??= null;
-                        $prdVariants['start_date'] = $itemV["'start_date'"] ??= null;
-                        $prdVariants['end_date'] = $itemV["'end_date'"] ??= null;
-                        $prdVariants['quantity'] = $itemV["'quantity'"] ??= null;
-                        ProductVariant::query()->create($prdVariants);
+                        $prdVariant = $product->variants()->create(
+                            [
+                                'price_default' => $itemV["'price_default'"],
+                                'price_sale' => $itemV["'price_sale'"],
+                                'start_date' => $itemV["'start_date'"],
+                                'end_date' => $itemV["'end_date'"],
+                                'quantity' => $itemV["'quantity'"],
+                            ]
+                        );
+                        $prdVariant->variantValues()->create(
+                            [
+                                'color_attribute_id' => $idColor,
+                                'size_attribute_id' => $idSize,
+                                'color_value' => $itemV["'color_value'"],
+                                'size_value' => $itemV["'size_value'"],
+                            ]
+                        );
                     }
                 }
             }
@@ -134,7 +168,10 @@ class ProductController extends Controller
             return redirect()->route('admin.products.createPrd')->with('success', 'Thêm mới sản phẩm thành công!');
         } catch (\Exception $exception) {
             DB::rollBack();
-            return redirect()->back()->with('error', $exception->getMessage());
+            if ($productN['image_thumbnail']) {
+                Storage::delete($productN['image_thumbnail']);
+            }
+            return redirect()->back()->with('error', $exception->getMessage())->withInput();
         }
     }
     // Hàm để tạo mã SKU duy nhất
@@ -148,7 +185,8 @@ class ProductController extends Controller
     }
     public function editProduct(string $slug)
     {
-        $modelPrd = Product::query()->with(['tags', 'galleries', 'variants'])->where('slug', $slug)->first();
+        $modelPrd = Product::query()->with(['tags', 'galleries'])->where('slug', $slug)->first();
+        $variantPRD = ProductVariant::query()->with(['variantValues'])->where('product_id', $modelPrd->id)->get();
         $warningDate = '';
         if ($modelPrd->end_date) {
             $now = Carbon::now('Asia/Ho_Chi_Minh')->format('Y-m-d H:i');
@@ -177,6 +215,7 @@ class ProductController extends Controller
                 'warningDate',
                 'colorAttr',
                 'sizeAttr',
+                'variantPRD',
             )
         );
     }
@@ -201,13 +240,14 @@ class ProductController extends Controller
     }
     public function updateProduct(string $slug, Request $request)
     {
+        // dd($request->updateV);
         $modelProduct = Product::query()->where('slug', $slug)->first();
         $productN = [];
         $checkSlug = true;
         $productN['name'] = $request->name;
         if ($modelProduct->slug == Str::slug($productN['name'])) {
             $checkSlug = false;
-        } 
+        }
         $productN['product_galleries'] = $request->product_galleries ??= null;
         if ($productN['product_galleries'] != null) {
             $fileNames = [];
@@ -261,11 +301,11 @@ class ProductController extends Controller
             }
         });
         if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
+            return redirect()->back()->withErrors($validator);
         }
         $productN['sale_percent'] = $request->sale_percent;
         if ($productN['sale_percent'] >= 100) {
-            return redirect()->back()->with(['error' => 'Giá cả nhập không hợp lý!.'])->withInput();
+            return redirect()->back()->with(['error' => 'Giá cả nhập không hợp lý!.']);
         }
         $productN['start_date'] = $request->start_date;
         $productN['end_date'] = $request->end_date;
@@ -273,7 +313,7 @@ class ProductController extends Controller
             $start = Carbon::parse($productN['start_date']);
             $end = Carbon::parse($productN['end_date']);
             if ($start->gt($end)) {
-                return redirect()->back()->with(['error' => 'Ngày bắt đầu không được lớn hơn ngày kết thúc.'])->withInput();
+                return redirect()->back()->with(['error' => 'Ngày bắt đầu không được lớn hơn ngày kết thúc.']);
             }
         }
         $productN['description'] = $request->description ??= 'Chưa cập nhật mô tả cho sản phẩm!';
@@ -286,6 +326,41 @@ class ProductController extends Controller
         }
         $productN['quantity'] = $request->quantity ??= 0;
         $productN['is_active'] = $request->is_active ??= 0;
+        $productV = $request->prdV;
+        if ($productV) {
+            foreach ($productV as $idC => $value) {
+                foreach ($value as $idS => $item) {
+                    $startDate = $item["'start_date'"] ??= null;
+                    $endDate = $item["'end_date'"] ??= null;
+                    if ($startDate && $endDate) {
+                        $startDate = Carbon::parse($startDate);
+                        $endDate = Carbon::parse($endDate);
+                        if ($startDate->gt($endDate)) {
+                            return redirect()->back()->with(['error' => 'Ngày bắt đầu không được lớn hơn ngày kết thúc.']);
+                        }
+                    }
+                }
+            }
+        }
+        $updateVariants = $request->updateV;
+        if ($updateVariants) {
+            foreach ($updateVariants as $itemV) {
+                $startDate = $itemV["'start_date'"] ??= null;
+                $endDate = $itemV["'end_date'"] ??= null;
+                if ($startDate && $endDate) {
+                    $startDate = Carbon::parse($startDate);
+                    $endDate = Carbon::parse($endDate);
+                    if ($startDate->gt($endDate)) {
+                        return redirect()->back()->with(['error' => 'Ngày bắt đầu không được lớn hơn ngày kết thúc.']);
+                    }
+                }
+                $priceD = $itemV["'price_default'"] ??= null;
+                $priceS = $itemV["'price_sale'"] ??= null;
+                if ($priceD && $priceS && $priceS > $priceD) {
+                    return redirect()->back()->with(['error' => 'Giá khuyến mại không được lớn hơn giá gốc.'])->withInput();
+                }
+            }
+        }
         try {
             DB::beginTransaction();
             $tmpImgThumb = $modelProduct->image_thumbnail;
@@ -316,10 +391,51 @@ class ProductController extends Controller
                     ]);
                 }
             }
+            if ($productV) {
+                foreach ($productV as $idColor => $v) {
+                    foreach ($v as $idSize => $itemV) {
+                        $prdVariant = $modelProduct->variants()->create(
+                            [
+                                'price_default' => $itemV["'price_default'"] ??= 0,
+                                'price_sale' => $itemV["'price_sale'"] ??= 0,
+                                'start_date' => $itemV["'start_date'"] ??= null,
+                                'end_date' => $itemV["'end_date'"] ??= null,
+                                'quantity' => $itemV["'quantity'"] ??= 0,
+                            ]
+                        );
+                        $prdVariant->variantValues()->create(
+                            [
+                                'color_attribute_id' => $idColor,
+                                'size_attribute_id' => $idSize,
+                                'color_value' => $itemV["'color_value'"],
+                                'size_value' => $itemV["'size_value'"],
+                            ]
+                        );
+                    }
+                }
+            }
+            if ($updateVariants) {
+                $dataVariants = [];
+                foreach ($updateVariants as $key => $value) {
+                    $modelVariant = ProductVariant::query()->find($key);
+                    $dataVariants['price_default'] = $value["'price_default'"] ??= 0;
+                    $dataVariants['price_sale'] = $value["'price_sale'"] ??= 0;
+                    $dataVariants['start_date'] = $value["'start_date'"] ??= null;
+                    $dataVariants['end_date'] = $value["'end_date'"] ??= null;
+                    $dataVariants['quantity'] = $value["'quantity'"] ??= 0;
+                    $modelVariant->update($dataVariants);
+                }
+            }
             DB::commit();
+            if ($request->hasFile('image_thumbnail') && $tmpImgThumb && Storage::exists($tmpImgThumb)) {
+                Storage::delete($tmpImgThumb);
+            }
             return redirect()->back()->with('success', 'Cập nhật sản phẩm thành công!');
         } catch (\Exception $exception) {
             DB::rollBack();
+            if ($productN['image_thumbnail']) {
+                Storage::delete($productN['image_thumbnail']);
+            }
             return redirect()->back()->with('error', $exception->getMessage());
         }
     }

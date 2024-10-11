@@ -20,13 +20,6 @@
                         @endif
                     @endauth
                 @endif
-
-                <li class="nav-item">
-                    <a class="nav-link" href="shop-categories.html">Our Stores</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="javascript:;">Help & FAQs</a>
-                </li>
             </ul>
         </nav>
     </div>

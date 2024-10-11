@@ -65,48 +65,28 @@
                 <div class="col">
                     <div class="footer-section3">
                         <h5 class="mb-4 text-uppercase fw-bold">Popular Tags</h5>
+                        @php
+                            $dataTags = \DB::table('tags')->pluck('name');
+                        @endphp
                         <div class="tags-box d-flex flex-wrap gap-2">
-                            <a href="javascript:;" class="btn btn-ecomm btn-outline-dark">Cloths</a>
-                            <a href="javascript:;" class="btn btn-ecomm btn-outline-dark">Electronis</a>
-                            <a href="javascript:;" class="btn btn-ecomm btn-outline-dark">Furniture</a>
-                            <a href="javascript:;" class="btn btn-ecomm btn-outline-dark">Sports</a>
-                            <a href="javascript:;" class="btn btn-ecomm btn-outline-dark">Men Wear</a>
-                            <a href="javascript:;" class="btn btn-ecomm btn-outline-dark">Women Wear</a>
-                            <a href="javascript:;" class="btn btn-ecomm btn-outline-dark">Laptops</a>
-                            <a href="javascript:;" class="btn btn-ecomm btn-outline-dark">Formal Shirts</a>
-                            <a href="javascript:;" class="btn btn-ecomm btn-outline-dark">Topwear</a>
-                            <a href="javascript:;" class="btn btn-ecomm btn-outline-dark">Headphones</a>
-                            <a href="javascript:;" class="btn btn-ecomm btn-outline-dark">Bottom Wear</a>
-                            <a href="javascript:;" class="btn btn-ecomm btn-outline-dark">Bags</a>
-                            <a href="javascript:;" class="btn btn-ecomm btn-outline-dark">Sofa</a>
-                            <a href="javascript:;" class="btn btn-ecomm btn-outline-dark">Shoes</a>
+                            @foreach ($dataTags as $tag)
+                                <a href="javascript:;" class="btn btn-ecomm btn-outline-dark">{{ $tag }}</a>
+                            @endforeach
                         </div>
                     </div>
                 </div>
                 <div class="col">
                     <div class="footer-section4">
                         <h5 class="mb-4 text-uppercase fw-bold">Stay informed</h5>
-                        <div class="subscribe">
-                            <input type="text" class="form-control" placeholder="Enter Your Email" />
+                        <form action="" class="subscribe" method="POST">
+                            @csrf
+                            <input type="text" class="form-control" placeholder="Enter Your Email" name="email" />
                             <div class="mt-3 d-grid">
-                                <a href="javascript:;" class="btn btn-dark btn-ecomm">Subscribe</a>
+                                <button type="submit" class="btn btn-dark btn-ecomm">Subscribe</button>
                             </div>
                             <p class="mt-3 mb-0">Subscribe to our newsletter to receive early discount offers,
                                 updates and new products info.</p>
-                        </div>
-                        <div class="download-app mt-3">
-                            <h6 class="mb-3 text-uppercase fw-bold">Download our app</h6>
-                            <div class="d-flex align-items-center gap-2">
-                                <a href="javascript:;">
-                                    <img src="{{ asset('theme/client/images/icons/apple-store.png') }}" class=""
-                                        width="140" alt="" />
-                                </a>
-                                <a href="javascript:;">
-                                    <img src="{{ asset('theme/client/images/icons/play-store.png') }}" class=""
-                                        width="140" alt="" />
-                                </a>
-                            </div>
-                        </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -118,22 +98,6 @@
         <div class="container">
             <div class="d-flex flex-column flex-lg-row align-items-center gap-3 justify-content-between">
                 <p class="mb-0">Copyright © 2022. All right reserved.</p>
-                <div class="payment-icon">
-                    <div class="row row-cols-auto g-2 justify-content-end">
-                        <div class="col">
-                            <img src="{{ asset('theme/client/images/icons/visa.png') }}" alt="" />
-                        </div>
-                        <div class="col">
-                            <img src="{{ asset('theme/client/images/icons/paypal.png') }}" alt="" />
-                        </div>
-                        <div class="col">
-                            <img src="{{ asset('theme/client/images/icons/mastercard.png') }}" alt="" />
-                        </div>
-                        <div class="col">
-                            <img src="{{ asset('theme/client/images/icons/american-express.png') }}" alt="" />
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </section>

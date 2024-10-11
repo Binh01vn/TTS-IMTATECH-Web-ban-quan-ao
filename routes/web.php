@@ -24,7 +24,8 @@ use Illuminate\Support\Facades\Route;
 // });
 
 Route::get('/', [HomeController::class, 'shopHome'])->name('shopHome');
-
+Route::get('aboutUs', [HomeController::class, 'aboutUs'])->name('about');
+Route::get('contact', [HomeController::class, 'contact'])->name('contact');
 Route::prefix('auth')
     ->as('auth.')
     ->group(function () {
@@ -47,8 +48,9 @@ Route::prefix('dashboard')
 Route::prefix('shop')
     ->as('shop.')
     ->group(function () {
-        Route::get('shopIndex', [ShopController::class, 'shopIndex'])->name(name: 'shopIndex');
+        Route::get('shopIndex', [ShopController::class, 'shopIndex'])->name('shopIndex');
         Route::get('detail/{slug}', [ShopController::class, 'productDetail'])->name('detail');
+        Route::post('reviews', [ShopController::class, 'reviews'])->name('reviews')->middleware('auth.checkLog');
     });
 Route::prefix('cart')
     ->as('cart.')
