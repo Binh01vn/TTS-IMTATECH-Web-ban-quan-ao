@@ -1,11 +1,11 @@
 <?php
 
-use App\Http\Controllers\Auth\Client\DashboardAccountController;
-use App\Http\Controllers\Auth\Client\LoginController;
-use App\Http\Controllers\Auth\Client\RegisterController;
-use App\Http\Controllers\Client\CartController;
-use App\Http\Controllers\Client\HomeController;
-use App\Http\Controllers\Client\ShopController;
+use App\Http\Controllers\client\AjaxController;
+use App\Http\Controllers\client\HomeController;
+use App\Http\Controllers\client\LoginController;
+use App\Http\Controllers\client\OtherController;
+use App\Http\Controllers\client\RegisterController;
+use App\Http\Controllers\client\ShopController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -18,14 +18,15 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+Route::get('/', [HomeController::class, 'index']);
 
-// Route::get('/', function () {
-//     return view('client.contents-main.home.home-content');
-// });
-
-Route::get('/', [HomeController::class, 'shopHome'])->name('shopHome');
-Route::get('aboutUs', [HomeController::class, 'aboutUs'])->name('about');
-Route::get('contact', [HomeController::class, 'contact'])->name('contact');
+Route::controller(ShopController::class)->prefix('shop')->as('shop.')->group(function () {
+    Route::get('product-detail/{slug}', 'detail')->name('detail_sp');
+    Route::post('review-product', 'review')->name('review_sp');
+});
+Route::controller(AjaxController::class)->prefix('ajax')->as('ajax.')->group(function () {
+    Route::post('rend-variant', 'rendPrdV')->name('rendPrdV');
+});
 Route::prefix('auth')
     ->as('auth.')
     ->group(function () {
@@ -34,30 +35,11 @@ Route::prefix('auth')
         Route::get('register', [RegisterController::class, 'showFormReg'])->name('register');
         Route::post('register', [RegisterController::class, 'register'])->name('reg');
         Route::post('logout', [LoginController::class, 'logout'])->name('logout')->middleware(['auth.checkLog']);
+        // đăng nhập, đăng ký với tài khoản google
+        Route::get('google', [LoginController::class, 'redirectToGoogle'])->name('google');
+        Route::get('google/callback', [LoginController::class, 'handleGoogleCallback']);
     });
-Route::prefix('dashboard')
-    ->as('dashboard.')
-    ->middleware(['auth.checkLog'])
-    ->group(function () {
-        Route::get('/', [DashboardAccountController::class, 'dashboardAccount'])->name('index');
-        Route::get('listOrders', [DashboardAccountController::class, 'listOrders'])->name('listOrders');
-        Route::get('{id}/detailOrder', [DashboardAccountController::class, 'detailOrder'])->name('detailOrder');
-        Route::get('{id}/updateStatus', [DashboardAccountController::class, 'updateStatus'])->name('updateStatus');
-    });
-
-Route::prefix('shop')
-    ->as('shop.')
-    ->group(function () {
-        Route::get('shopIndex', [ShopController::class, 'shopIndex'])->name('shopIndex');
-        Route::get('detail/{slug}', [ShopController::class, 'productDetail'])->name('detail');
-        Route::post('reviews', [ShopController::class, 'reviews'])->name('reviews')->middleware('auth.checkLog');
-    });
-Route::prefix('cart')
-    ->as('cart.')
-    ->group(function () {
-        Route::get('shopCart', [CartController::class, 'shopCart'])->name('shopCart');
-        Route::post('addCart', [CartController::class, 'addCart'])->name('addCart');
-        Route::get('delOneCart/{slug}', [CartController::class, 'delOneCart'])->name('delOneCart');
-        Route::get('checkoutCart', [CartController::class, 'checkoutCart'])->name('checkoutCart')->middleware(['auth.checkLog']);
-        Route::post('saveOrder', [CartController::class, 'createOrder'])->name('saveOrder')->middleware(['auth.checkLog']);
-    });
+Route::controller(OtherController::class)->prefix('other-page')->as('other-page.')->group(function () {
+    Route::get('about-us', 'AboutUs')->name('about_us');
+    Route::get('contact-us', 'ContactUs')->name('contact_us');
+});

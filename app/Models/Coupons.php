@@ -8,26 +8,26 @@ use Illuminate\Database\Eloquent\Model;
 class Coupons extends Model
 {
     use HasFactory;
-    const TYPE_FIXED = 'fixed';
-    const TYPE_PERCENT = 'percent';
-
+    const DISCOUNT_TYPE = [
+        'percent' => 'Giảm giá phần trăm (%)',
+        'fixed' => 'Giảm giá cố định',
+    ];
     protected $fillable = [
+        'name',
         'code',
         'description',
         'discount_type',
         'discount_amount',
-        'usage_limit',
-        'used_count',
-        'start_date',
-        'end_date',
         'minimum_spend',
         'maximum_spend',
-        'individual_use',
-        'exclude_sale_items',
+        'start_date',
+        'end_date',
+        'quantity',
+        'quantity_received',
+        'quantity_used',
+        'status_coupon',
     ];
-
-    protected $cats = [
-        'individual_use' => 'boolean',
-        'exclude_sale_items' => 'boolean',
+    protected $casts = [
+        'status_coupon' => 'boolean',
     ];
 }

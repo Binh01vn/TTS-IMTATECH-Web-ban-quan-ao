@@ -6,26 +6,28 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
-    const TYPE_ADMIN = 'admin';
-    const TYPE_MEMBER = 'member';
+    const TYPE_ACCOUNT = [
+        'admin' => 'Quản trị website',
+        'member' => 'Thành viên tham gia',
+    ];
     /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
+        'google_id',
+        'full_name',
         'email',
-        'password',
         'phone_number',
         'address',
-        'type',
+        'password',
+        'type_account',
         'status_account',
     ];
 
@@ -49,9 +51,4 @@ class User extends Authenticatable
         'password' => 'hashed',
         'status_account' => 'boolean',
     ];
-    public function reviews()
-    {
-        // 1 user có nhiều reviews
-        return $this->hasMany(Review::class);
-    }
 }

@@ -1,24 +1,16 @@
 <?php
 
-namespace App\Http\Controllers\Client;
+namespace App\Http\Controllers\client;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product;
+use App\Models\Products;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
-    public function shopHome()
+    public function index()
     {
-        $dataProductNew = Product::query()->with('galleries')->where('is_active', '1')->limit(8)->latest('id')->get();
-        return view('client.main-contents.home-page.home-content', compact('dataProductNew'));
-    }
-    public function aboutUs()
-    {
-        return view('client.main-contents.about-us');
-    }
-    public function contact()
-    {
-        return view('client.main-contents.contact');
+        $products = Products::query()->where(['status' => 1])->with('category')->limit(15)->get();
+        return view('client.home.index', compact('products'));
     }
 }

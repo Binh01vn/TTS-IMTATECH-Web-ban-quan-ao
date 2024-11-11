@@ -1,64 +1,75 @@
 <?php
 
-use App\Http\Controllers\Admin\AttributeController;
-use App\Http\Controllers\Admin\CategoryController;
-use App\Http\Controllers\Admin\OrderController;
-use App\Http\Controllers\Admin\ProductController;
-use App\Http\Controllers\Admin\TagController;
+use App\Http\Controllers\admin\AjaxController;
+use App\Http\Controllers\admin\AttributesController;
+use App\Http\Controllers\admin\CategoriesController;
+use App\Http\Controllers\admin\CouponsController;
+use App\Http\Controllers\admin\ProductsController;
+use App\Http\Controllers\admin\TagsController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('admin')->as('admin.')->middleware(['auth.checkAdmin'])->group(function () {
+Route::prefix('admin')->as('admin.')->group(function () {
     Route::get('/', function () {
-        return view('admin.contents.dashboard.main');
-    })->name('dashboard');
-    // route quan ly danh muc san pham
-    Route::prefix('categories')
-        ->as('categories.')
-        ->group(function () {
-            Route::get('/', [CategoryController::class, 'index'])->name('listDM');
-            Route::post('store', [CategoryController::class, 'store'])->name('storeDM');
-            Route::get('edit/{slug}', [CategoryController::class, 'edit'])->name('editDM');
-            Route::put('update/{slug}', [CategoryController::class, 'update'])->name('updateDM');
-            Route::get('delete/{slug}', [CategoryController::class, 'destroy'])->name('deleteDM');
-        });
-    // Route quan ly thuoc tinh san pham
-    Route::prefix('attributes')
-        ->as('attributes.')
-        ->group(function () {
-            Route::get('/', [AttributeController::class, 'listAttribute'])->name('list');
-            Route::post('createAttrValues', [AttributeController::class, 'createAttrValues'])->name('create');
-            Route::get('{id}/delValueC', [AttributeController::class, 'delValueC'])->name('delValueC');
-            Route::get('{id}/delValueS', [AttributeController::class, 'delValueS'])->name('delValueS');
-            Route::get('{attr}/edit', [AttributeController::class, 'showFormEdit'])->name('edit');
-            Route::post('{attr}/update', [AttributeController::class, 'update'])->name('update');
-        });
-    // Route quan ly san pham
-    Route::prefix('products')
-        ->as('products.')
-        ->group(function () {
-            Route::get('/', [ProductController::class, 'listProduct'])->name('listPrd');
-            Route::get('create', [ProductController::class, 'create'])->name('createPrd');
-            Route::get('attrValue', [ProductController::class, 'getAttrValue'])->name('attrValue');
-            Route::post('store', [ProductController::class, 'store'])->name('storePrd');
-            Route::get('listProduct', [ProductController::class, 'list'])->name('list');
-            Route::get('editProduct/{slug}', [ProductController::class, 'editProduct'])->name('editProduct');
-            Route::put('updateProduct/{slug}', [ProductController::class, 'updateProduct'])->name('updateProduct');
-            Route::get('{id}/delImageG', [ProductController::class, 'delImageG'])->name('delImageG');
-            Route::get('{id}/delTag', [ProductController::class, 'delTag'])->name('delTag');
-        });
-    // Route quan ly tags
-    Route::prefix('tags')
-        ->as('tags.')
-        ->group(function () {
-            Route::get('/', [TagController::class, 'index'])->name('listTags');
-            Route::post('create', [TagController::class, 'create'])->name('createTag');
-            Route::get('{id}/destroy', [TagController::class, 'destroy'])->name('deleteTag');
-        });
-    Route::prefix('orders')
-        ->as('orders.')
-        ->group(function () {
-            Route::get('listOrder', [OrderController::class, 'listOrder'])->name('list');
-            Route::post('bulkActions', [OrderController::class, 'bulkActions'])->name('bulkActions');
-            Route::get('{id}/orderDetail', [OrderController::class, 'orderDetail'])->name('detail');
-        });
+        return view('admin.dashboard');
+    });
+    // quản lý danh mục - phân loại sản phẩm
+    Route::controller(CategoriesController::class)->prefix('categories')->as('categories.')->group(function () {
+        Route::get('/', 'list')->name('danh_sach');
+        // crud phân loại sản phẩm
+        Route::post('add-phan-loai', 'phan_loai')->name('them_pl');
+        Route::get('edit-pl/{slug}', 'edit_pl')->name('edit_pl');
+        Route::put('update-pl/{slug}', 'update_pl')->name('update_pl');
+        // crud danh mục sản phẩm
+        Route::post('add-danh-muc', 'danh_muc')->name('them_dm');
+        Route::get('edit-dm/{slug}', 'edit_dm')->name('edit_dm');
+        Route::put('update-dm/{slug}', 'update_dm')->name('update_dm');
+    });
+    // quản lý sản phẩm
+    Route::controller(ProductsController::class)->prefix('products')->as('products.')->group(function () {
+        Route::get('/', 'index')->name('list_sp');
+        Route::get('detail/{slug}', 'detail')->name('detail_sp');
+        Route::get('show-form', 'showForm')->name('show_form');
+        Route::post('store', 'store')->name('them_sp');
+        Route::get('edit/{slug}', 'edit')->name('edit_sp');
+        Route::put('update-sp/{product}', 'update')->name('update_sp');
+        Route::delete('xoa-sp/{product}', 'destroy')->name('xoa_sp');
+        // sản phẩm xóa mềm
+        Route::get('listTrashed', 'trashed')->name('list_trashed');
+        Route::get('restore-all', 'restoreAll')->name('restoreAll');
+        Route::delete('forceDelProduct/{id}', 'forceDelProduct')->name('forceDelProduct');
+        Route::get('restoreProduct/{id}', 'restoreProduct')->name('restoreProduct');
+    });
+    // quản lý thẻ
+    Route::controller(TagsController::class)->prefix('tags')->as('tags.')->group(function () {
+        Route::get('/', 'list')->name('list_tags');
+        Route::post('add-tag', 'store')->name('them_tag');
+        Route::delete('delete-tag/{tag}', 'delete')->name('xoa_tag');
+    });
+    // quản lý thuộc tính sản phẩm
+    Route::controller(AttributesController::class)->prefix('attributes')->as('attributes.')->group(function () {
+        Route::get('/', 'list')->name('list_tt');
+        Route::post('them-attr-value', 'store')->name('them_attr_value');
+        Route::delete('delete-color/{color}', 'deleteColor')->name('xoa_mau');
+        Route::delete('delete-size/{size}', 'deleteSize')->name('xoa_kich_thuoc');
+        Route::get('{attr}/edit', 'edit')->name('sua_tt');
+        Route::post('{attr}/update', 'update')->name('cap_nhat_tt');
+    });
+    // quản lý mã khuyến mại
+    Route::controller(CouponsController::class)->prefix('coupons')->as('coupons.')->group(function () {
+        Route::get('/', 'index')->name('list_mkm');
+        Route::get('add-coupon', 'add')->name('add_mkm');
+        Route::post('store-coupon', 'store')->name('store_mkm');
+        Route::get('detail-coupon/{id}', 'show')->name('detai_mkm');
+        Route::get('edit-coupon/{id}', 'edit')->name('edit_mkm');
+        Route::put('update-coupon/{coupon}', 'update')->name('update_mkm');
+        Route::delete('delete-coupon/{coupon}', 'delete')->name('delete_mkm');
+    });
+    // route thực hiện các ajax
+    Route::controller(AjaxController::class)->prefix('ajax')->as('ajax.')->group(function () {
+        // ajax quản lý sản phẩm
+        Route::get('rendCtg/{slug}', 'rendCtg')->name('rendCtg');
+        Route::get('delTag/{idTag}/{idPRD}', 'delTag')->name('delTag');
+        Route::get('{id}/delImg', 'delImg')->name('delImg');
+        Route::get('xoa-variant/{id}', 'delVariant')->name('xoa_variant');
+    });
 });
